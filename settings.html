@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+  <head>
+    <title>My annotations</title>
+    
+        <link rel="stylesheet" href="css/container.css">
+        <link rel="stylesheet" href="bootstrap/css/bootstrap.css">
+        <link rel="stylesheet" href="css/custom.css">
+        <script src="js/angular.min.js"></script>
+        
+        <script src="oauth2/oauth2.js"></script>
+        <script src="youtubeapi/youtube.js"></script>
+        
+        <script src="js/copy.js"></script>
+        <script src = "js/templating.js"></script>
+        <script src="js/annotationsServices.js"></script>
+        <script src="js/YoutubeServices.js"></script>
+        <script src="js/BackgroundServices.js"></script>
+        <script src="js/DataServices.js"></script>
+        <script src="js/MongoServices.js"></script>
+
+        <!--script src="bootstrap/js/ui-bootstrap.min.js"></script-->
+        <script src="bootstrap/js/ui-bootstrap-tpls-0.6.0.min.js"></script>
+        <script src = "js/angular-sanitize.min.js"></script>
+        
+        
+         <style>
+            body{
+                font-size:74%;
+                min-width:600px;
+                font-family:'Open Sans','Calibri','sans-serif';
+            }
+        </style>
+  </head>
+    <body>
+        <div ng-app = "copyYAnnotations" ng-csp = "">
+            
+        <header class="navbar navbar-fixed-top" ng-controller="headCtrl">
+            <nav class="navbar-inner" style="height:32px;" >
+                    <a style="margin-left:10px;" class="brand" href=""><img src="images/19-g.png"/> My annotations on any.TV</a>
+                    <!-- <button ng-click="testMongo();">savetest</button> -->
+                    <input type="search" ng-show="hasAccessToken" style="height:19px!important;margin-top:4.5px!important;width:220px;" class="input-mini" size = '320px' ng-model="search.snippet.title" placeholder="Search">
+                    
+                    <div style="margin-top:-6px;" class="btn-group btn-mini" ng-show = "hasAccessToken" tooltip-placement="right" tooltip ="{{completedData.finished.length}} success" >
+                        <a hre="#" class="btn btn-mini dropdown-toggle" data-toggle="dropdown">
+                            <span class="text-success">{{completedData.finished.length}}</span>&nbsp;<span class="icon-ok"></span>
+                        </a>
+                         <ul class="dropdown-menu"> 
+                             <li ng-repeat="item in completedData.finished"><a href ="#" ng-click="openAnnotEditor();">{{item.name}}</a></li>
+                         </ul>
+                    </div>
+                    
+                    <div style="margin-top:-6px;margin-left:-10px!important;" class="btn-group btn-mini" ng-show = "hasAccessToken" tooltip-placement="right" tooltip ="{{completedData.unfinished.length}} error" >
+                        <a hre="#" class="btn btn-mini dropdown-toggle" data-toggle="dropdown">
+                            <span class="text-error">{{completedData.unfinished.length}}</span>&nbsp;<span class="icon-remove"></span>
+                        </a>
+                         <ul class="dropdown-menu"> 
+                             <li ng-repeat="item in completedData.unfinished"><a href ="#">{{item.name}}</a></li>
+                         </ul>
+                    </div>
+                    
+                    <div class="btn-group btn-mini pull-right" style="margin-top:8px;margin-right: 15px;">
+                        <!--button class="btn btn-small btn-danger">{{userInfo.email}}</button-->
+                        <button class="btn btn-mini btn-danger" ng-show="!hasAccessToken" ng-click = "auth();">{{sessionBind}}</button>
+                        <a hre="#" class="btn btn-mini dropdown-toggle" data-toggle="dropdown">
+                            {{userInfo.email}}&nbsp;<span class="caret"></span><!--span class="caret"></span-->
+                        </a>
+                         <ul class="dropdown-menu"> 
+                             <li><a href="#" ng-click = "openExternalLinks('http://www.any.tv');">any.TV Website</a></li>
+                             <li><a href="#" ng-click = "openExternalLinks('http://www.youtube.com/anytvnetwork');">any.TV Network</a></li>
+                             <li id="sendAnnotation" ng-click = "auth();"><a href="#">{{sessionBind}}</a></li>
+                         </ul>
+                    </div>
+            </nav>
+            <center><alert style = "position:inherit;height:2px;line-height:0.5px" ng-repeat="alert in alerts" type="alert.type" style ="width:320px;"><div ng-bind-html = "alert.msg"></div></alert></center>
+        </header>
+            <br/><br/><br/><br/>
+        <section ng-controller="settingsCtrl">
+        
+            
+        </section>
+        <footer style="clear:both;">
+            <section><center><a href="#">Home</a> &nbsp; <a href="http://www.facebook.com/anyTVnetwork‎" target="_blank">Facebook</a> &nbsp; <a href="http://twitter.com/anyTVnetwork" target="_blank">Twitter</a> &nbsp; <a href="http://plus.google.com/109971475987405213729/videos" target="_blank">Google+</a> &nbsp; <a href="http://www.youtube.com/user/anyTVnetwork" target="_blank">YouTube</a><br>
+            <a href="http://www.any.tv">any.TV Limited</a> &copy; 2013 | Believe in You!
+         </center></section>
+            
+        </footer>
+        </div>
+    </body>
+</html>
+

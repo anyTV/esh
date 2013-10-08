@@ -1,0 +1,61 @@
+{
+  "manifest_version": 2,
+
+  "name": "videobar.tm",
+  "description": "Create videobar or copy any annotations on youtube!",
+  "version": "1.0",
+  
+  "icons": { "19": "images/19.png",
+           "48": "images/48.png",
+          "128": "images/128.png" 
+          },
+  
+  "page_action": {
+    "default_icon": 
+    {
+    	"19":"images/19.png",
+    	"38":"images/48.png"
+    },
+    "default_title":"videobar.tm",
+    "default_popup": "index.html"
+  },
+  "options_page": "options.html",
+  
+  "background": {
+		"page": "background.html",
+		"presistent":"false"
+  	},
+  
+  
+  "content_scripts": [
+    {
+      "matches": ["http://www.facebook.com/robots.txt*"],
+      "js": ["oauth2/oauth2_inject.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["http://www.google.com/robots.txt*"],
+      "js": ["oauth2/oauth2_inject.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://github.com/robots.txt*"],
+      "js": ["oauth2/oauth2_inject.js"],
+      "run_at": "document_start"
+    }
+  ],
+  
+  "permissions": [
+  	"tabs",
+  	"storage",
+  	"http://www.youtube.com/*",
+  	"https://www.youtube.com/*",
+  	"https://gdata.youtube.com/*",
+    "https://accounts.google.com/o/oauth2/token",
+    "https://www.googleapis.com/auth/youtubepartner",
+    "https://www.googleapis.com/auth/youtube",
+    "https://www.googleapis.com/auth/plus.me",
+    "http://wwww.videobar.tm/*",
+    "http://*/"
+  	]
+}
