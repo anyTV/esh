@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<document>
+
+<metadata>
+	<creator>anyTV Limited</creator>
+	<title>Videobar 8.0</title>
+	<desc>This is cute</desc>
+	<date>09-13-2013</date>
+	<identifier>0</identifier>
+	<images>
+		<image href="http://i1.ytimg.com/vi/wQQ7Ws222f8/mqdefault.jpg" media-type="image/jpeg"></image>
+	</images>
+</metadata>
+
+
+<annotations>
+<annotation id="annotation_videobar_home_text" type="text" style="highlightText" logable="false">
+<TEXT>Home: Video menu</TEXT>
+<segment spaceRelative="annotation_videobar_home">
+<movingRegion type="rect">
+<rectRegion x="9.66700" y="8.16900" w="25.02400" h="7.40800" t="never"/>
+<rectRegion x="9.66700" y="8.16900" w="25.02400" h="7.40800" t="never"/>
+</movingRegion>
+</segment>
+<appearance bgAlpha="0" textSize="3.911599999999999" highlightFontColor="15921906"/>
+<trigger>
+<condition ref="annotation_videobar_home" state="rollOver"/>
+</trigger>
+</annotation>
+<annotation id="annotation_videobar_home" type="highlight" log_data="xble=1">
+<segment>
+<movingRegion type="rect">
+<rectRegion x="0.00000" y="0.28200" w="10.50000" h="13.30000" t="0"/>
+<rectRegion x="0.00000" y="0.28200" w="10.50000" h="13.30000" t="3:57.00"/>
+</movingRegion>
+</segment>
+<appearance bgColor="0" highlightWidth="0" borderAlpha="0.25"/>
+<action type="openUrl" trigger="click">
+<url target="current" value="http://www.youtube.com/playlist?list=PLyI74zGGymu_kk6Dug7huwTIqi4L3Klu6" link_class="11"/>
+</action>
+</annotation>
+<annotation id="annotation_videobar_next_text" type="text" style="highlightText" logable="false">
+<TEXT>Next Button</TEXT>
+<segment spaceRelative="annotation_videobar_next">
+<movingRegion type="rect">
+<rectRegion x="9.66700" y="5.11300" w="17.47200" h="7.40800" t="never"/>
+<rectRegion x="9.66700" y="5.11300" w="17.47200" h="7.40800" t="never"/>
+</movingRegion>
+</segment>
+<appearance bgAlpha="0" textSize="3.911599999999999" highlightFontColor="15921906"/>
+<trigger>
+<condition ref="annotation_videobar_next" state="rollOver"/>
+</trigger>
+</annotation>
+<annotation id="annotation_videobar_next" type="highlight" log_data="xble=1">
+<segment>
+<movingRegion type="rect">
+<rectRegion x="0.00000" y="14.32400" w="10.50000" h="13.30000" t="0"/>
+<rectRegion x="0.00000" y="14.32400" w="10.50000" h="13.30000" t="3:57.00"/>
+</movingRegion>
+</segment>
+<appearance bgColor="0" highlightWidth="0" borderAlpha="0.25"/>
+<action type="openUrl" trigger="click">
+<url target="current" value="http://www.youtube.com/playlist?list=PLyI74zGGymu_kk6Dug7huwTIqi4L3Klu6&amp;v=1BZmecGM1Ag" link_class="11"/>
+</action>
+</annotation>
+<annotation id="annotation_videobar_star_text" type="text" style="highlightText" logable="false">
+<TEXT>Star Button</TEXT>
+<segment spaceRelative="annotation_videobar_star">
+<movingRegion type="rect">
+<rectRegion x="9.98400" y="6.22600" w="16.37100" h="7.40800" t="never"/>
+<rectRegion x="9.98400" y="6.22600" w="16.37100" h="7.40800" t="never"/>
+</movingRegion>
+</segment>
+<appearance bgAlpha="0" textSize="3.911599999999999" highlightFontColor="15921906"/>
+<trigger>
+<condition ref="annotation_videobar_star" state="rollOver"/>
+</trigger>
+</annotation>
+<annotation id="annotation_videobar_star" type="highlight" log_data="xble=1">
+<segment>
+<movingRegion type="rect">
+<rectRegion x="0.00000" y="29.54900" w="10.50000" h="13.30000" t="0"/>
+<rectRegion x="0.00000" y="29.54900" w="10.50000" h="13.30000" t="3:57.00"/>
+</movingRegion>
+</segment>
+<appearance bgColor="0" highlightWidth="0" borderAlpha="0.25"/>
+<action type="openUrl" trigger="click">
+<url target="current" value="http://www.youtube.com/watch?v=q7tCPjPeOXk#t=1m37s" link_class="11"/>
+</action>
+</annotation>
+<annotation id="annotation_videobar_skip1_text" type="text" style="highlightText" logable="false">
+<TEXT>1</TEXT>
+<segment spaceRelative="annotation_videobar_skip1">
+<movingRegion type="rect">
+<rectRegion x="9.98400" y="8.22500" w="6.37900" h="7.40800" t="never"/>
+<rectRegion x="9.98400" y="8.22500" w="6.37900" h="7.40800" t="never"/>
+</movingRegion>
+</segment>
+<appearance bgAlpha="0" textSize="3.911599999999999" highlightFontColor="15921906"/>
+<trigger>
+<condition ref="annotation_videobar_skip1" state="rollOver"/>
+</trigger>
+</annotation>
+<annotation id="annotation_videobar_skip1" type="highlight" log_data="xble=1">
+<segment>
+<movingRegion type="rect">
+<rectRegion x="0.00000" y="42.25400" w="10.50000" h="13.30000" t="0"/>
+<rectRegion x="0.00000" y="42.25400" w="10.50000" h="13.30000" t="3:57.00"/>
+</movingRegion>
+</segment>
+<appearance bgColor="0" highlightWidth="0" borderAlpha="0.25"/>
+<action type="openUrl" trigger="click">
+<url target="current" value="http://www.youtube.com/watch?v=q7tCPjPeOXk#t=1m37s" link_class="11"/>
+</action>
+</annotation>
+<annotation id="annotation_videobar_skip2_text" type="text" style="highlightText" logable="false">
+<TEXT>2</TEXT>
+<segment spaceRelative="annotation_videobar_skip2">
+<movingRegion type="rect">
+<rectRegion x="9.35000" y="7.04200" w="8.13800" h="7.40800" t="never"/>
+<rectRegion x="9.35000" y="7.04200" w="8.13800" h="7.40800" t="never"/>
+</movingRegion>
+</segment>
+<appearance bgAlpha="0" textSize="3.911599999999999" highlightFontColor="15921906"/>
+<trigger>
+<condition ref="annotation_videobar_skip2" state="rollOver"/>
+</trigger>
+</annotation>
+<annotation id="annotation_videobar_skip2" type="highlight" log_data="xble=1">
+<segment>
+<movingRegion type="rect">
+<rectRegion x="0.00000" y="58.02800" w="10.50000" h="13.30000" t="0"/>
+<rectRegion x="0.00000" y="58.02800" w="10.50000" h="13.30000" t="3:57.00"/>
+</movingRegion>
+</segment>
+<appearance bgColor="0" highlightWidth="0" borderAlpha="0.25"/>
+<action type="openUrl" trigger="click">
+<url target="current" value="http://www.youtube.com/watch?v=q7tCPjPeOXk#t=2m57s" link_class="11"/>
+</action>
+</annotation>
+<annotation id="annotation_videobar_skip3_text" type="text" style="highlightText" logable="false">
+<TEXT>3</TEXT>
+<segment spaceRelative="annotation_videobar_skip3">
+<movingRegion type="rect">
+<rectRegion x="9.50900" y="6.52100" w="6.91700" h="7.40800" t="never"/>
+<rectRegion x="9.50900" y="6.52100" w="6.91700" h="7.40800" t="never"/>
+</movingRegion>
+</segment>
+<appearance bgAlpha="0" textSize="3.911599999999999" highlightFontColor="15921906"/>
+<trigger>
+<condition ref="annotation_videobar_skip3" state="rollOver"/>
+</trigger>
+</annotation>
+<annotation id="annotation_videobar_skip3" type="highlight" log_data="xble=1">
+<segment>
+<movingRegion type="rect">
+<rectRegion x="0.00000" y="72.33800" w="10.50000" h="13.30000" t="0"/>
+<rectRegion x="0.00000" y="72.33800" w="10.50000" h="13.30000" t="3:57.00"/>
+</movingRegion>
+</segment>
+<appearance bgColor="0" highlightWidth="0" borderAlpha="0.25"/>
+<action type="openUrl" trigger="click">
+<url target="current" value="http://www.youtube.com/watch?v=q7tCPjPeOXk#t=3m24s" link_class="11"/>
+</action>
+</annotation>
+<annotation id="annotation_videobar_hide_text" type="text" style="highlightText" logable="false">
+<TEXT>Hide videobar and logo</TEXT>
+<segment spaceRelative="annotation_videobar_hide">
+<movingRegion type="rect">
+<rectRegion x="10.14300" y="6.54900" w="28.53400" h="7.40800" t="never"/>
+<rectRegion x="10.14300" y="6.54900" w="28.53400" h="7.40800" t="never"/>
+</movingRegion>
+</segment>
+<appearance bgAlpha="0" textSize="3.911599999999999" highlightFontColor="15921906"/>
+<trigger>
+<condition ref="annotation_videobar_hide" state="rollOver"/>
+</trigger>
+</annotation>
+<annotation id="annotation_videobar_hide" type="highlight" log_data="xble=1">
+<segment>
+<movingRegion type="rect">
+<rectRegion x="0.00000" y="86.64800" w="10.50000" h="13.30000" t="0"/>
+<rectRegion x="0.00000" y="86.64800" w="10.50000" h="13.30000" t="3:57.00"/>
+</movingRegion>
+</segment>
+<appearance bgColor="0" highlightWidth="0" borderAlpha="0.25"/>
+<action type="openUrl" trigger="click">
+<url target="current" value="http://www.youtube.com/playlist?list=PLyI74zGGymu_Jg-nVqO6a43JLaAUD0u3k&amp;v=JxBiyUjqXoM" link_class="11"/>
+</action>
+</annotation>
+
+<annotation id="annotation_videobar_channel_text" type="text" style="highlightText" logable="false">
+			<TEXT>Official any.TV channel</TEXT>
+			<segment spaceRelative="annotation_videobar_channel">
+			<movingRegion type="rect">
+			<rectRegion x="-24.63400" y="5.38700" w="26.27000" h="11.43700" t="never"/>
+			<rectRegion x="-24.63400" y="5.38700" w="26.27000" h="11.43700" t="never"/>
+			</movingRegion>
+			</segment>
+			<appearance bgAlpha="0" textSize="3.911591666666667" highlightFontColor="15921906"/>
+			<trigger>
+			<condition ref="annotation_videobar_channel" state="rollOver"/>
+			</trigger>
+		</annotation>
+
+		<annotation id="annotation_videobar_channel" type="highlight" log_data="xble=1">
+			<segment>
+			<movingRegion type="rect">
+			<rectRegion x="84.06300" y="82.50000" w="15.93700" h="17.51400" t="0:00"/>
+			<rectRegion x="84.06300" y="82.50000" w="15.93700" h="17.51400" t="3:04"/>
+			</movingRegion>
+			</segment>
+			<appearance bgColor="0" highlightWidth="0" borderAlpha="0.0"/>
+			<action type="openUrl" trigger="click">
+			<url target="current" value="http://www.youtube.com/anyTVnetwork" link_class="11"/>
+			</action>
+		</annotation>
+
+</annotations>
+</document>

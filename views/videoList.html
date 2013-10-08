@@ -1,0 +1,31 @@
+<center>
+    <span>
+    <!--b style="font-size: 15px">Choose a video</b>&nbsp;&nbsp;&nbsp;<input type="search" size = '50px' ng-model="search.snippet.title" placeholder="Search">
+    <!--Filter by: <select ng-model="filterByToggle" ng-options="f.filter as f.name for f in filters" placeholder="Filter by" class = "input-medium"></select-->
+    <!--button ng-click="selectAll();" class="btn btn-success btn-mini" >{{selectState}}</button-->
+    </span>
+</center>
+    <div id = "post-list" when-scrolled="loadMore();" class ="table-bordered">
+        <ul  id="ul-list" class="thumbnails">
+            <li  class="span4" id = "post-box" ng-repeat="video in filteredVideo = (((videos | filter:search.snippet.title) | orderBy:'video.snippet.title') | filter:filterByToggle)">
+                <div id="post-selected_{{video.toggle}}" class="thumbnail" ng-click ="toggleVideo(video.snippet.resourceId.videoId);toggleCheckbox();" tooltip-placement="bottom"  tooltip="Playtime: {{video.duration}}">
+                    <center><a id = 'ylink' href =""><img id = "img-video" ng-src ="{{video.snippet.thumbnails.medium.url}}"/></a></center>
+                    <center><a id = 'ylink' target='_blank' href = ''>{{video.snippet.title | limitTo:3}}</a></center><br/>
+                </div>  
+            </li>
+        </ul>
+        <center><br/><div id="progress" class="progress progress-striped active" style ="width:400px;" ng-hide = "viewControl">
+          <div class="bar" style="width: 100%;"></div>
+        </div></center>
+    </div>
+    <center>
+        <table cellspacing='0' cellpadding='0' >
+            <!--tr>
+                <td colspan="3"><center><span class="badge badge-info"><small>Selected Items : {{selected.length}}</small></span></center></td>
+            </tr-->
+            <tr>
+                </br>
+                <td colspan="3" style="text-align:right"><center><span class="badge"><small>No. of items : {{filteredVideo.length}}/{{videos.length}}</small></span></center></td>
+            </tr>
+        </table>
+    </center>
