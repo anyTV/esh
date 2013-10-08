@@ -37,7 +37,7 @@
             
         <header class="navbar navbar-fixed-top" ng-controller="headCtrl">
             <nav class="navbar-inner" style="height:32px;" >
-                    <a style="margin-left:10px;" class="brand" href=""><img src="images/19-g.png"/> videobar.tm</a>
+                    <a style="margin-left:10px;" class="brand" href=""><img src="images/19-g.png"/> videobar.tm 1.2</a>
                     <!-- <button ng-click="testMongo();">savetest</button> -->
                     <input type="search" ng-show="hasAccessToken" style="height:19px!important;margin-top:4.5px!important;width:220px;" class="input-mini" size = '320px' ng-model="search.snippet.title" placeholder="Search">
                     
@@ -100,13 +100,29 @@
                                    </center>
                                    </br>
                                     <div collapse= "templates.isCollapsed">
-                                        <div  class="well well-small">
-                                            
-                                        <div ng-switch on="multiMode">
-                                            <div ng-switch-when = "true">You cannot customize if multiselect is on. The default values will be loaded to selected videos.</div>
-                                            <div ng-switch-when = "false"><h3>Customize</h3>
-                                                    <accordion close-others="true" >
-                                                         <accordion-group heading="{{button.name}}" ng-repeat="button in template.buttons">
+                                        <div>
+                                            <accordion close-others="true">
+
+                                                    <accordion-group ng-repeat="video in selected"  is-open = "!multiMode">
+                                                              
+                                                        <accordion-heading>
+                                                            <center><button class="btn btn-inverse btn-small btn-block">{{video.name}}</button></center>
+                                                        </accordion-heading>  
+
+                                                            <div ng-switch on = "$index">
+                                                                <div ng-switch-when= "0"></div>
+                                                                <div ng-switch-default>
+
+                                                                    <center><button type="button" ng-click = "copyButtons(video);" class="btn btn-small btn-danger">
+                                                                        Copy settings of first
+                                                                    </button></center>
+                                                                    <br/>
+
+                                                                </div>
+                                                            </div>
+                                                        <accordion close-others="true" >
+
+                                                            <accordion-group heading="{{button.name}}" ng-repeat="button in video.buttons">
     
                                                             <div class="well">
                                                              <h4>{{button.name}}</h4>
@@ -139,7 +155,7 @@
                                                                         <div ng-switch on ="templateOptions.addMode"  ng-init="templateOptions.addMode = 'false'">
                                                                             <div ng-switch-when="true">
                                                                                 <div class="btn-group">
-                                                                                    <button class="btn btn-success" ng-disabled="newOptionForm.$error.required" ng-click="saveItem(template.id,$index,button);templateOptions.addMode = !templateOptions.addMode"><span class="icon-check"></span></button>
+                                                                                    <button class="btn btn-success" ng-disabled="newOptionForm.$error.required" ng-click="saveItem(video,$index,button);templateOptions.addMode = !templateOptions.addMode"><span class="icon-check"></span></button>
                                                                                     <button class="btn dropdown-toggle" data-toggle="dropdown">
                                                                                         <span class="caret"></span>
                                                                                     </button>
@@ -155,19 +171,19 @@
                                                                         
                                                                     </td>
                                                                         
-                                                                    <td><input name="newText" type ="text" ng-model="templates.newText" required ng-show="templateOptions.addMode" style="width:300px;" /></td>
+                                                                    <td><input name="newText" type ="text" ng-model="video.newText" required ng-show="templateOptions.addMode" style="width:300px;" /></td>
                                                                     <td ng-show = "button.allowEditDuration">
                                                                         <!-- <time-input name="newStart" ng-model="templates.newStart" showthis="templateOptions.addMode" ></time-input> -->
-                                                                        <input type ="text" ng-show = "templateOptions.addMode" ng-model ="templates.newStart" class="timeClass" />
+                                                                        <input type ="text" ng-show = "templateOptions.addMode" ng-model ="video.newStart" class="timeClass" />
                                                                     </td>
                                                                     <td  ng-show = "button.allowEditDuration">
                                                                         <!-- <time-input name="newStop" ng-model="templates.newStop" showthis="templateOptions.addMode" ></time-input> -->
-                                                                        <input type ="text" ng-show = "templateOptions.addMode" ng-model ="templates.newStop" class="timeClass" />
+                                                                        <input type ="text" ng-show = "templateOptions.addMode" ng-model ="video.newStop" class="timeClass" />
                                                                     </td>
                                                                     <td>
                                                                         <div ng-switch on ="button.actiontype">
-                                                                            <div ng-switch-when="url" ng-show="templateOptions.addMode">Insert URL : <input name="newAction" type ="url" ng-model="templates.newAction.url" required /></div>
-                                                                            <div ng-switch-when="time" ng-show = "templateOptions.addMode" >Skip to : <input type ="text" ng-model ="templates.newAction.time" class="timeClass" /></div>
+                                                                            <div ng-switch-when="url" ng-show="templateOptions.addMode">Insert URL : <input name="newAction" type ="url" ng-model="video.newAction.url" required /></div>
+                                                                            <div ng-switch-when="time" ng-show = "templateOptions.addMode" >Skip to : <input type ="text" ng-model ="video.newAction.time" class="timeClass" /></div>
                                                                         </div>
                                                                     </td>
                                                                     
@@ -175,12 +191,15 @@
                                                             </table>
                                                             <!-- </form> -->
                                                         </div>
-                                                     </accordion-group>
-                                                 </accordion>
-                                            </div>
-                                        </div>                                            
+                                                        </accordion-group>
+                                                    </accordion>
+                                                </accordion-group>
+                                            </accordion>
 
-                                            
+
+
+                                        </div>
+                                           
                                                 
                                              <center>
                                                 <!-- <button id="sendAnnotation" ng-click = "saveAnnotations('save',template);" class="btn btn-success btn-small">Save Annotations</button>
@@ -194,9 +213,10 @@
                                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                 <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "saveAnnotations('publish',template);" class="btn btn-primary btn-small" tooltip-placement="top" tooltip="Save and publish your annotations">Publish</button>
                                                 <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "saveAnnotations('delete',template);" class="btn btn-danger btn-small" tooltip-placement="top" tooltip="Clear mirrored annotations">Clear</button>
-                                                <button ng-click="testData(template);">asdfasdfasdf</button>
+                                                
                                             </center>
-                                        </div>                                    </div>
+                                        </div>
+                                    </div>
                                     
                                 </slide>
                             </carousel>

@@ -25,54 +25,93 @@ function templateController($rootScope,$scope,annotationsServices,dataServices)
         // console.log(url);
        
     }
+
+    $scope.copyButtons = function(video)
+    {
+        video.buttons = $rootScope.selected[0].buttons;
+    }
+
     
     $scope.useTemplate = function(template,index)
     {
         console.log(template);
         
-        if($rootScope.multiSelect == false || $rootScope.selected.length == 1 )
-        {
-            $scope.multiMode = false;
-            annotationsServices.checkVideoTemplate(template.xml_ids,$rootScope.selected[0]).then(function(data)
+        // if($rootScope.multiSelect == false || $rootScope.selected.length == 1 )
+        // {
+        //     $scope.multiMode = false;
+
+            var i =0;
+
+            if($rootScope.selected.length == 1)
+                $scope.multiMode = false;
+            else
+                $scope.multiMode = true;
+            angular.forEach($rootScope.selected,function(video)
             {
-                if(data.templateUsed)
+                annotationsServices.checkVideoTemplate(template,video,i).then(function(data)
                 {
-                    console.log("loading annotations from youtube");
-                    var result = annotationsServices.analyzeAnnotations(template.xml_ids,data.xml);
-                }
-                else
-                {
-                    var result = annotationsServices.analyzeIds(template.url,template.xml_ids,$rootScope.selected[0]);
-                    console.log(arguments);
-                }
-                
-                $rootScope.templates[index].buttons = result.objects;
                     
-                    angular.forEach($rootScope.templates[index].buttons,function(button)
+                    console.log(data);
+                    // if(data.objects.template_buttons)
+                    // {
+                    //     console.log("loading annotations from youtube");
+                    //     // var result = annotationsServices.analyzeAnnotations(template.xml_ids,data.xml);
+                    if(data['default'])
                     {
-                        if(button.actiontype == "url" && button.addable == true)
+                        annotationsServices.checkOnYoutube(template,video,i).then(function(yt)
                         {
-                            button.allowEditDuration = true;
-                        }
-                    })
-                    console.log($rootScope.templates);
+                            if(yt.templateUsed)
+                            {
+                                annotationsServices.analyzeAnnotations(template.xml_ids,yt.xml);
+                            }
+                            else
+                            {
+                                
+                            }
+                        });
+                    }
+                    else
+                    {
+                        $rootScope.templates[index].buttons = data.objects;
+                        $rootScope.selected[data.identifier].buttons = data.objects;
+                        $rootScope.selected[data.identifier].template_id = data.template_id;
+                    }
+                          
+                    // }
+                    // else
+                    // {
+                    //     var result = annotationsServices.analyzeIds(template.xml_ids,video,i);
+                    //     console.log(arguments);
+                    //     $rootScope.templates[index].buttons = result.objects;
+                    //     $rootScope.selected[result.identifier].buttons = result.objects;
+                    // }
+                        
+                        angular.forEach($rootScope.templates[index].buttons,function(button)
+                        {
+                            if(button.actiontype == "url" && button.addable == true)
+                            {
+                                button.allowEditDuration = true;
+                            }
+                        });
+                     
+                });
+                i++;            
             });
-        }
-        else
-        {
-            $scope.multiMode = true;
-        }
-        
-        
-        
-        
-            
+
+        // }
+        // else
+        // {
+        //     $scope.multiMode = true;
+           
+
+        // }
+
     }
     
-    $scope.saveItem = function(templateIndex,btnIndex,button)
+    $scope.saveItem = function(video,btnIndex,button)
     {
         console.log(button);
-        var newText = $scope.templates.newText,newStart = $scope.templates.newStart,newStop = $scope.templates.newStop,newAction = $scope.templates.newAction;
+        var newText = video.newText,newStart = video.newStart,newStop = video.newStop,newAction = video.newAction;
         
         var duration = {"start":newStart,"stop":newStop};
         var length = button.instances.length
@@ -81,7 +120,7 @@ function templateController($rootScope,$scope,annotationsServices,dataServices)
         // base[0].action.childNodes[0].attributes[1].value = newAction;
         button.instances.push({"id":annotationsServices.getIdPrefix()+base[0].id+"_"+(length+1),"action":newAction,"text":newText,"textId":annotationsServices.getIdPrefix()+base[0].textId+"_"+(length+1),"duration":duration,"editable":true});
         button.edited = true;
-        $scope.templates.newText = "",$scope.templates.newStart = "",$scope.templates.newStop = "",$scope.templates.newAction = "";$scope.templates.addMode = false;
+        video.newText = "",video.newStart = "",video.newStop = "",video.newAction = "";video.addMode = false;
     }
     
     $scope.deleteItem = function(id,buttons)

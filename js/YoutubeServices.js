@@ -179,16 +179,18 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
                                                     videos.forEach(function(video)
                                                     {
                                                         console.log($rootScope.multiSelect);
-                                                        if($rootScope.multiSelect == false || videos.length == 1)
-                                                            xmlList[i] = annotationsServices.customizeTemplate(getTemplate(),video);
-                                                        else
-                                                        {
-                                                            console.log("many");
-                                                            var result = annotationsServices.analyzeIds(getTemplate().url,getTemplate().xml_ids,video)
-                                                            setTemplate(result.objects,"buttons");
-                                                            console.log(getTemplate());
-                                                            xmlList[i] = annotationsServices.customizeTemplate(getTemplate(),video);
-                                                        }
+                                                        // if($rootScope.multiSelect == false || videos.length == 1)
+                                                            var result = annotationsServices.customizeTemplate(video);
+                                                        // else
+                                                        // {
+                                                        //     console.log("many");
+                                                        //     var result = annotationsServices.analyzeIds(getTemplate().url,getTemplate().xml_ids,video)
+                                                        //     setTemplate(result.objects,"buttons");
+                                                        //     console.log(getTemplate());
+                                                        //     var result = annotationsServices.customizeTemplate(getTemplate(),video);
+                                                        // }
+                                                        xmlList[i] = result.xml;
+                                                        // video.buttons = result.buttons;
                                                        i++;
                                                     });
                 

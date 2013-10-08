@@ -2,7 +2,7 @@
  * @author esh
  */
 
-myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServices)
+myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServices,dataServices)
 {
     var idPrefix= "annotation_"
     var btnBase = '<annotation id="annotation_" type="highlight" log_data="xble=1">'+
@@ -639,6 +639,45 @@ myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServi
         
         return {"x":x,"y":y};
     }
+
+    function analyzeIds(xmlIds,video)
+    {
+        var optIden = arguments[2];
+            var finalResult = [];
+            //CREATE YOUR OWN ANNOTATION
+                
+                angular.forEach(xmlIds,function(identifier)
+                {
+                    // console.log(identifier);
+                    var duration = {"start":"","stop":""};
+                    finalResult.push({
+                        "name":identifier.name,
+                        "addable":identifier.addable,
+                        "edited":false,
+                        "allowEditDuration":"",
+                        "actiontype":identifier.actiontype,
+                        "pos":identifier.pos,
+                        "size":identifier.size,
+                        "instances":new Array({
+                                                "id":identifier.ids.btn,
+                                                "action":"",
+                                                "text":identifier.name,
+                                                "textId":identifier.ids.text,
+                                                "duration":duration,
+                                                "editable":false
+                                                })
+                                    });
+                });
+                // console.log($rootScope.selected[0]);
+                // customizeTemplate(finalResult,xml,$rootScope.selected[0]);
+                
+                angular.forEach(finalResult,function(button)
+                {
+                    templateDefaults(button,video);
+                });
+                
+            return {"objects":finalResult,"identifier":optIden}; 
+    }
     
     return {
         updateXML:function(xmlString,id)
@@ -803,7 +842,7 @@ myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServi
             
             // console.log(annotationsSorted.stopRelative[0].xml);
         },
-        customizeTemplate:function(template,video)
+        customizeTemplate:function(video)
         {
             console.log("Customizing Template");
             // console.log(template);
@@ -812,7 +851,7 @@ myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServi
         var baseXml = textToXML(base);
         
         vidIdlen = 0;
-        angular.forEach(template.buttons,function(button)
+        angular.forEach(video.buttons,function(button)
         {
             if(button.size == undefined && button.pos == undefined)
              vidIdlen++; 
@@ -824,7 +863,7 @@ myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServi
         console.log("height: "+baseHeight);
         
         // var finalResult = [];
-        angular.forEach(template.buttons,function(button)
+        angular.forEach(video.buttons,function(button)
         {
             // console.log(button);
             var cloneBtnNode = cloneNode({"xml":baseBtnXml.childNodes[0],"id":idPrefix+button.instances[0].id},baseXml);
@@ -908,7 +947,7 @@ myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServi
             
         });
             
-            return baseXml;
+            return {"xml":baseXml,"buttons":video.buttons};
             
             /*
             angular.forEach(xml.getElementsByTagName("annotations")[0].childNodes,function(node)
@@ -1021,44 +1060,38 @@ myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServi
             // console.log(xml);
             // return xml;
         },
-        analyzeIds:function(src,xmlIds,video)
+        analyzeIds:function(xmlIds,video)
         {
-            var finalResult = [];
-            //CREATE YOUR OWN ANNOTATION
-                
-                angular.forEach(xmlIds,function(identifier)
-                {
-                    // console.log(identifier);
-                    var duration = {"start":"","stop":""};
-                    finalResult.push({
-                        "name":identifier.name,
-                        "addable":identifier.addable,
-                        "edited":false,
-                        "allowEditDuration":"",
-                        "actiontype":identifier.actiontype,
-                        "pos":identifier.pos,
-                        "size":identifier.size,
-                        "instances":new Array({
-                                                "id":identifier.ids.btn,
-                                                "action":"",
-                                                "text":identifier.name,
-                                                "textId":identifier.ids.text,
-                                                "duration":duration,
-                                                "editable":false
-                                                })
-                                    });
-                });
-                // console.log($rootScope.selected[0]);
-                // customizeTemplate(finalResult,xml,$rootScope.selected[0]);
-                
-                angular.forEach(finalResult,function(button)
-                {
-                    templateDefaults(button,video);
-                });
-                
-            return {"objects":finalResult,"identifier":""}; 
+            return analyzeIds(xmlIds,video,arguments[2]);
         },
-        checkVideoTemplate:function(xmlIds,video)
+        checkVideoTemplate:function(template,video)
+        {
+            var optIden = arguments[2];
+            var deferred = $q.defer();
+            dataServices.getAnnotationTemplates(video.id,"json",optIden).then(function(result)
+            {
+                // console.log(result);
+                if(result.objects.template_buttons)
+                {
+                    if(template.id == result.objects.template_id)
+                        deferred.resolve({"objects":result.objects.template_buttons,"identifier":result.identifier,"template_id":result.objects.template_id});
+                    else
+                    {
+                        var result = analyzeIds(template.xml_ids,video,optIden);
+                        deferred.resolve({"objects":result.objects,"identifier":result.identifier,"template_id":template.id});
+                    }
+                }
+                else
+                {
+
+                    var result = analyzeIds(template.xml_ids,video,optIden);
+                    deferred.resolve({"objects":result.objects,"identifier":result.identifier,"template_id":template.id,"default":true});
+                }
+            });
+            
+            return deferred.promise;
+        },
+        checkOnYoutube:function(template,video)
         {
             var deferred = $q.defer();
             var url = createURL("http://www.youtube.com/watch",{"v":video.id});
@@ -1100,6 +1133,7 @@ myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServi
                 
             });
             return deferred.promise;
+
         },
         getIdPrefix:function()
         {
@@ -1225,7 +1259,6 @@ myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServi
             var deferred = $q.defer();
             var url = createURL("http://www.youtube.com/watch",{"v":video.id});
             var annot = "<document><annotations></annotations></document>"
-            
             
             var annotation = createAnnotations(template.xml_ids);
             
