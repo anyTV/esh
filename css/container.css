@@ -1,0 +1,96 @@
+    
+    ::-webkit-scrollbar-track { background-color: #191919; }
+    ::-webkit-scrollbar-thumb { background-color: #EDEDED; }
+    ::-webkit-scrollbar-corner { background-color: #ededed; } 
+    ::-webkit-scrollbar { width: 7px; }
+    
+    b
+    {
+        color:gray;
+    }
+    #ylink
+    {
+        font-size:1.1em;
+        font-weight:bold;
+    }
+    
+     #loadingbar{display:block;margin:0 auto;}
+     #ul-list
+     {
+         margin:0 auto;
+     }
+    #post-box
+    {
+        padding:7px;
+        width:160px;
+        height:150px;
+        margin:0px auto;
+    }
+    #img-video
+    {
+        width:120px;
+    }
+    #post-selected_, #post-selected_1{
+        height:120px;
+        padding:5px;
+    }
+    
+    table tr:last-child td:first-child {
+        border-bottom-left-radius:10px;
+    }
+
+    table tr:last-child td:last-child {
+        border-bottom-right-radius:10px;
+    }
+   
+    #post-selected_
+    {
+        font-family:calibri;
+        background: #FFFFFF;
+    }
+    #post-selected_1 
+    {
+        font-family:calibri;
+        color:#191919;
+        background: #ededed; /* Old browsers */
+        
+        border:1px lightgray solid;
+        padding-top:4px;
+        padding-bottom:4px;
+        border-radius:2px;
+       -webkit-transition: all .20s ease-in-out;
+          -moz-transition: all .20s ease-in-out;
+          -o-transition: all .20s ease-in-out;
+          transition: all .20s ease-in-out;
+    }
+    
+    #post-selected_1:hover 
+    {
+        display:block;
+        background:#ededef;
+        border:1px lightgray solid;
+        color:#191919;
+    }
+    #post-selected_:hover
+    {
+        background: #f4f3f3;
+        -webkit-transition: all .20s ease-in-out;
+          -moz-transition: all .20s ease-in-out;
+          -o-transition: all .20s ease-in-out;
+          transition: all .20s ease-in-out;
+    }
+    
+/* positions here */
+    #post-list
+    {
+        overflow-y:scroll;
+        height:320px;
+    }
+    #resultVideos-container
+    {
+        margin:0;
+        padding-left:5px;
+        padding-right:5px;
+        padding-bottom:10px;    }
+   
+    
