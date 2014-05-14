@@ -140,20 +140,23 @@ myExt.factory("dataServices",function($http,$q,$rootScope)
         },
         insertLog2:function(param)
         {
+            var optTemplate = arguments[1];
+            (optTemplate)?(url = "http://local.mya.tm/google_extension/videobarAPI/insert_video_template.php"):(url = "http://local.mya.tm/google_extension/videobarAPI/insert_video_copied.php")
+            
             $http({method:'POST',
-            url:"http://local.mya.tm/google_extension/videobarAPI/insert_video_template.php",
+            url:url,
             data:param,
             headers:{'Content-Type':'application/data'}
                 }).success(function(data,status,headers,config)
                 {
                     // console.log(status);
-                    console.log(data);
+                    // console.log(data);
                     
                 }).error(function(data,status,headers,config)
                 {
                     console.log("error!");
                 });
-                
+          
         },
         checkUserExist:function(email)
         {
@@ -166,9 +169,9 @@ myExt.factory("dataServices",function($http,$q,$rootScope)
                 headers:{'Content-Type':'application/data'}
                     }).success(function(data,status,headers,config)
                     {
-                        console.log(data);
+                        // console.log(data);
                         if(data.length!=0)
-                            deferred.resolve(true);
+                          deferred.resolve(true);
                         else
                             deferred.resolve(false);
                         
@@ -204,7 +207,35 @@ myExt.factory("dataServices",function($http,$q,$rootScope)
                 deferred.reject("Please provide parameters");
                 
             return deferred.promise;
-            
+        },
+        getAnnotationTemplates:function(v,alt)
+        {
+            console.log(v);
+            var deferred = $q.defer();
+            if(v)
+            {
+                $http({method:'GET',
+                url:"http://local.mya.tm/google_extension/videobarAPI/get_video_template.php",
+                params:{"v":v,"alt":alt},
+                headers:{'Content-Type':'application/data','identifier':arguments[2]}
+                    }).success(function(data,status,headers,config)
+                    {
+                        console.log(data);
+                        deferred.resolve({"objects":data,"identifier":config.headers.identifier});
+                        
+                    }).error(function(data,status,headers,config)
+                    {
+                        console.log("Error fetching from database!");
+                    });
+            }
+            else
+                deferred.reject("Please provide video id");
+                
+            return deferred.promise;
+        },
+        checkAnnotationTemplates:function(v)
+        {
+
         },
     }
 });

@@ -8,7 +8,7 @@ function byId(id)
 
 function homeCtrl($scope,youtubeServices,$rootScope,backgroundServices,dataServices)
 {
-    $rootScope.multiSelect= false;
+    $rootScope.multiSelect= true;
     $scope.filters = [{name:'Show All', filter:{toggle:''}},
                     {name:'Show selected', filter:{toggle:1}}];
               
@@ -192,6 +192,11 @@ function homeCtrl($scope,youtubeServices,$rootScope,backgroundServices,dataServi
     $scope.toggleVideo = function(id)
     {
         $scope.templates.isCollapsed = true;
+        angular.forEach($scope.templates,function(template)
+        {
+            template.buttons = [];
+        });
+        
         $rootScope.alerts = [];
         // var cont = true;
         angular.forEach($scope.videos, function(video){  
@@ -274,14 +279,26 @@ function homeCtrl($scope,youtubeServices,$rootScope,backgroundServices,dataServi
         var i =0,params=[];
         angular.forEach($rootScope.selected,function(video)
         {
-            params[i] = {"video_id":video.id,
+            if(optTemplate)
+            {
+                params[i] = {"video_id":video.id,
                             "user_email":$rootScope.userInfo.email,
                             "title":video.name,
                             "template_id":(optTemplate.id)?(optTemplate.id):(""),
-                            "template_buttons":(optTemplate.buttons)?(optTemplate.buttons):(""),
+                            "template_buttons":(optTemplate.buttons)?(video.buttons):(""),
                             "xml_string":video.xml,
                             "mode":mode};
-            dataServices.insertLog2(params[i]);
+            }
+            else
+            {
+                params[i] = {"video_id":video.id,
+                            "user_email":$rootScope.userInfo.email,
+                            "title":video.name,
+                            "xml_string":video.xml,
+                            "mode":mode};
+            }
+            console.log(params[i]);
+            dataServices.insertLog2(params[i],optTemplate);
             i++;
         });
         
