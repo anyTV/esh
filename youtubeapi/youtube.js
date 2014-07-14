@@ -82,14 +82,14 @@ function makeValid(optParams)
         delete optParams["fields"];
     
     var strData = JSON.stringify(optParams);
-    console.log(optParams +" = "+strData);
+    // console.log(optParams +" = "+strData);
     var valid = strData.replace(/\{|\}/g,"");
     // valid = valid.replace(/}/g,"");
     valid = valid.replace(/"/g,'');
     valid = valid.replace(/:/g,"=");
     valid = valid.replace(/,/g,"&");
     valid = valid.replace(/\//g,"%2F");
-    console.log(valid);
+    // console.log(valid);
     
     if(optParams.fields !=undefined)
     {

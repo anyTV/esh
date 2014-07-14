@@ -1,9 +1,9 @@
 {
   "manifest_version": 2,
 
-  "name": "videobar.tm",
-  "description": "Create videobar or copy any annotations on youtube!",
-  "version": "1.2",
+  "name": "Videobar on YouTube",
+  "description": "Create and program your own Videobar on YouTube or copy any YouTube annotations to your videos!",
+  "version": "1.5.5",
   
   "icons": { "19": "images/19.png",
            "48": "images/48.png",
@@ -16,7 +16,7 @@
     	"19":"images/19.png",
     	"38":"images/48.png"
     },
-    "default_title":"videobar.tm",
+    "default_title":"videobar",
     "default_popup": "index.html"
   },
   "options_page": "options.html",
@@ -29,17 +29,7 @@
   
   "content_scripts": [
     {
-      "matches": ["http://www.facebook.com/robots.txt*"],
-      "js": ["oauth2/oauth2_inject.js"],
-      "run_at": "document_start"
-    },
-    {
       "matches": ["http://www.google.com/robots.txt*"],
-      "js": ["oauth2/oauth2_inject.js"],
-      "run_at": "document_start"
-    },
-    {
-      "matches": ["https://github.com/robots.txt*"],
       "js": ["oauth2/oauth2_inject.js"],
       "run_at": "document_start"
     }
@@ -55,7 +45,7 @@
     "https://www.googleapis.com/auth/youtubepartner",
     "https://www.googleapis.com/auth/youtube",
     "https://www.googleapis.com/auth/plus.me",
-    "http://wwww.videobar.tm/*",
-    "http://*/"
+    "http://www.videobar.tm/*",
+    "http://local.mya.tm/*"
   	]
 }

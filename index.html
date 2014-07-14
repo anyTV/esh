@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
     <head>
-        <title>Videobar</title>
+        <title>Videobar on YouTube</title>
         
         <!--style>
         
@@ -28,6 +28,7 @@
         <script src="oauth2/oauth2.js"></script>
         <script src="youtubeapi/youtube.js"></script>
         <script src="js/angular.min.js"></script>
+        <script src="js/app.js"></script>
         <script src="js/copy.js"></script>
         <script src="js/annotationsServices.js"></script>
         <script src="js/YoutubeServices.js"></script>
@@ -51,7 +52,7 @@
     <body ng-app = "copyYAnnotations" ng-csp = "">
         <header class="navbar" ng-controller="headCtrl">
     		<nav class="navbar-inner" style="height:32px;" >
-        			<a class="brand" href=""><img src ="images/19-g.png"/>&nbsp;videobar.tm 1.2</a>
+        			<a class="brand" href=""><img src ="images/19-g.png"/>&nbsp;Videobar on YouTube</a>
         			<!-- <button class="btn btn-primary btn-mini"  style="margin-left: -13px!important;margin-top:8px;">Videobars!</button> -->
         			<div style="margin-top:7px;" class="btn-group btn-mini" ng-show = "hasAccessToken" tooltip-placement="right" tooltip ="{{completedData.finished.length}} success" >
         			    <a hre="#" class="btn btn-mini dropdown-toggle" data-toggle="dropdown">
@@ -81,19 +82,19 @@
                              <li><a href="#" ng-click = "openExternalLinks('http://www.any.tv');">any.TV Website</a></li>
                              <li><a href="#" ng-click = "openExternalLinks('http://www.youtube.com/anytvnetwork');">any.TV Network</a></li>
                              <!-- <li><a href="settings.html" target="_blank">Settings</a></li> -->
-                             <li><a href="#" ng-click = "openExternalLinks('options.html');">Create videobar!</a></li>
+                             <li><a href="#" ng-click = "openExternalLinks('options.html');">Create or edit Videobar!</a></li>
                              <li id="sendAnnotation" ng-click = "auth();"><a href="#">{{sessionBind}}</a></li>
                          </ul>
                     </div>
         			
     		</nav>
-            <center><alert style = "position:inherit;height:2px;line-height:0.5px" ng-repeat="alert in alerts" type="alert.type" style ="width:320px;"><div ng-bind-html = "alert.msg"></div></alert></center>
+            <center><alert style = "position:inherit;height:2px;line-height:0.5px" ng-repeat="alert in alerts_global" type="alert.type" style ="width:320px;"><div ng-bind-html = "alert.msg"></div></alert></center>
         </header>
         <section>
-            <article id ="resultVideos-container" ng-controller="homeCtrl" ng-show = "hasAccessToken" style="margin-top:-15px;" ng-init="multiSelect=false">
+            <article id ="resultVideos-container" ng-controller="homeCtrl" ng-show = "hasAccessToken" style="margin-top:-15px;" ng-init="multi_select=false">
                 &nbsp;<input type="search" ng-show="hasAccessToken" style="height:19px!important;margin-top:4.5px!important;width:320px;" class="input-mini" size = '320px' ng-model="search.snippet.title" placeholder="Search videos">
                 <div class="input-group-btn btn-group"><button class="btn btn-default" style="margin-top:-6px;"><span class="icon-search"></span></button></div>
-                <button class="btn btn-primary btn-small pull-right" style="margin-top:5px;" ng-click="openExternalLinks('options.html');">Create videobar!</button>
+                <button class="btn btn-primary btn-small pull-right" style="margin-top:5px;" ng-click="openExternalLinks('options.html');">Create or edit Videobar!</button>
                 <!--button ng-click="clearCollection()">Clear</button-->
                 <accordion close-others="true" >
                     <!--accordion-group>
@@ -138,20 +139,23 @@
                             </hr>
                             <center>
                             <b>Annotations:</b>&nbsp;
-                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "saveAnnotations('save');" class="btn btn-success btn-small">Save</button>
-                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "openAnnotEditor();" class="btn btn-small" tooltip-placement="top" tooltip="Edit on youtube">Edit</button>
+                                <!-- <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "saveAnnotations('save');" class="btn btn-success btn-small">Save</button> -->
+                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "saveAnnotations('publish');" class="btn btn-success btn-small" tooltip-placement="top" tooltip="Save and publish copied annotations">Save</button>
+                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "openAnnotEditor();" class="btn btn-primary btn-small" tooltip-placement="top" tooltip="Edit on youtube">Edit</button>
+                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "openYoutubeVideo();" class="btn btn-small" tooltip-placement="top" tooltip="Watch it on youtube">View</button>
                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "saveAnnotations('publish');" class="btn btn-primary btn-small" tooltip-placement="top" tooltip="Save and publish copied annotations">Publish</button>
+                                
                                 <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "saveAnnotations('delete');" class="btn btn-danger btn-small" tooltip-placement="top" tooltip="Clear copied annotations">Clear</button>
+                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "saveAnnotations('deleteall');" class="btn btn-inverse btn-small" tooltip-placement="top" tooltip="Clear all published annotations">Clear all</button>
                             </center>
                     </accordion-group>
                 </accordion>
             </article>
         </section>
 		<footer>
-		    <section><center><a href="#">Home</a> &nbsp; <a href="http://www.facebook.com/anyTVnetwork‎" target="_blank">Facebook</a> &nbsp; <a href="http://twitter.com/anyTVnetwork" target="_blank">Twitter</a> &nbsp; <a href="http://plus.google.com/109971475987405213729/videos" target="_blank">Google+</a> &nbsp; <a href="http://www.youtube.com/user/anyTVnetwork" target="_blank">YouTube</a><br>
-            <a href="http://www.any.tv">any.TV Limited</a> &copy; 2013 | Believe in You!
-         </center></section>
+		    <section><center><a href="#">Home</a> &nbsp; <a href="https://www.facebook.com/anyTVnetwork" target="_blank">Facebook</a> &nbsp; <a href="http://twitter.com/anyTVnetwork" target="_blank">Twitter</a> &nbsp; <a href="http://plus.google.com/109971475987405213729/videos" target="_blank">Google+</a> &nbsp; <a href="http://www.youtube.com/user/anyTVnetwork" target="_blank">YouTube</a><br>
+            <a href="http://www.any.tv">any.TV Limited</a> &copy; 2013 | Believe in You.
+         </center></section><br/>
 	    </footer>
     	
     </body>

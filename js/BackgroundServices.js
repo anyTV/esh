@@ -12,9 +12,8 @@ myExt.factory("backgroundServices",function($http,$q,$rootScope)
         var deferred = $q.defer();
             var vId = getParameterByName("v",currUrl);
             var xmlUrl;
-            console.log(currUrl.match(/youtube.com/g));
+            // console.log(currUrl.match(/youtube.com/g));
             (currUrl.match(/youtube.com/g) == null)?(xmlUrl=currUrl):(xmlUrl='https://www.youtube.com/annotations_invideo');
-            console.log(xmlUrl);
             $http({method:'GET',
             url:xmlUrl,
             params:{features:1, legacy:1,video_id:vId},
@@ -38,7 +37,7 @@ myExt.factory("backgroundServices",function($http,$q,$rootScope)
     return {
         getAnnotation:function(url)
         {
-            return getAnnotation(url,arguments[1]);
+            return getAnnotation(url,arguments[1],arguments[2]);
         },
         hasAnnotation:function()
         {
@@ -49,12 +48,18 @@ myExt.factory("backgroundServices",function($http,$q,$rootScope)
                 {
                     // console.log(data);
                     xml = textToXML(data);
-                    mainParent = xml.documentElement;
-                    // console.log(mainParent.getElementsByTagName("annotations")[0].childNodes.length);
-                    if(mainParent.getElementsByTagName("annotations")[0].childNodes.length == 0)
-                        deferred.resolve(false);
-                    else
-                        deferred.resolve(true);
+                    try{
+                            mainParent = xml.documentElement;
+                            // console.log(mainParent.getElementsByTagName("annotations")[0].childNodes.length);
+                            if(mainParent.getElementsByTagName("annotations")[0].childNodes.length == 0)
+                                deferred.resolve(false);
+                            else
+                                deferred.resolve(true);
+                    }
+                    catch(err)
+                    {
+                        deferred.reject("");
+                    }
                 },function(reason)
                 {
                     deferred.reject(reason);
@@ -66,6 +71,7 @@ myExt.factory("backgroundServices",function($http,$q,$rootScope)
         },
         sendXML:function(xml,mode)
         {
+            var optId = arguments[2];
             var deferred = $q.defer();
             var xmlString = (new XMLSerializer()).serializeToString(xml);
             
@@ -77,13 +83,12 @@ myExt.factory("backgroundServices",function($http,$q,$rootScope)
             $http({method: 'POST',
                 url:sendUrl,
                 data: xmlString,
-                headers: {'Content-Type': '*/*','video':arguments[2],'mode':mode},
+                headers: {'Content-Type': '*/*','video':arguments[2],'mode':mode,'identifier':optId},
                 withCredentials:true
                 })
             .success(function(data,status,headers,config)
             {
-                console.log(config);
-                deferred.resolve({"msg":"Success","status":status,"mode":config.headers.mode,"video":config.headers.video,"data":config.data});
+                deferred.resolve({"msg":"Success","status":status,"mode":config.headers.mode,"video":config.headers.video,"data":config.data,"identifier":config.headers.identifier});    
             }).
             error(function(data,status,headers,config)
             {
@@ -132,6 +137,7 @@ myExt.factory("backgroundServices",function($http,$q,$rootScope)
                 {name:"Next video",ids:{"btn":"videobar_next","text":"videobar_next_text"},"addable":false,"actiontype":"url"},
                 {name:"Hide videobar",ids:{"btn":"videobar_hide","text":"videobar_hide_text"},"addable":false,"actiontype":"url"},
                 {name:"Official channel",ids:{"btn":"videobar_channel","text":"videobar_channel_text"},"addable":false,"actiontype":"url","size":{"w":15.937,"h":17.514},"pos":{"x":84.063,"y":82.500}},
+                {name:"Get this music!",ids:{"btn":"videobar_getmusic","text":"videobar_getmusic_text"},"addable":true,"actiontype":"url","size":{"w":30.38800,"h":51.15500},"pos":{"x":34.86500,"y":20.84500}}
             ];
             
             // var xmlIds2 = [
@@ -167,15 +173,15 @@ myExt.factory("backgroundServices",function($http,$q,$rootScope)
                         ];
                         
                         
-            
+            // var url = "http://www.videobar.tm/apis/get_templates.php";
+            var url = "http://local.mya.tm/google_extension/videobarAPI/get_templates.php";
             $http({method:'GET',
-            url:"http://local.mya.tm/google_extension/videobarAPI/get_templates.php",
+            url:url,
             headers:{'Content-Type':'application/data'}
                 }).success(function(data,status,headers,config)
                 {
-                    console.log(data);
                     $rootScope.templates=data;
-                    console.log($rootScope.templates);
+                    logConsole("Templates",$rootScope.templates);
                     
                 }).error(function(data,status,headers,config)
                 {

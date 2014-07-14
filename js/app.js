@@ -1,0 +1,1 @@
+var myExt = angular.module('copyYAnnotations',['ui.bootstrap','scroll','ngSanitize']);

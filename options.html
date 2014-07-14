@@ -1,16 +1,16 @@
 <!doctype html>
 <html>
   <head>
-    <title>Videobar</title>
+    <title>Videobar on YouTube</title>
     
         <link rel="stylesheet" href="css/container.css">
         <link rel="stylesheet" href="bootstrap/css/bootstrap.css">
         <link rel="stylesheet" href="css/custom.css">
         <script src="js/angular.min.js"></script>
-        
         <script src="oauth2/oauth2.js"></script>
         <script src="youtubeapi/youtube.js"></script>
         
+        <script src="js/app.js"></script>
         <script src="js/copy.js"></script>
         <script src = "js/templating.js"></script>
         <script src="js/annotationsServices.js"></script>
@@ -37,7 +37,7 @@
             
         <header class="navbar navbar-fixed-top" ng-controller="headCtrl">
             <nav class="navbar-inner" style="height:32px;" >
-                    <a style="margin-left:10px;" class="brand" href=""><img src="images/19-g.png"/> videobar.tm 1.2</a>
+                    <a style="margin-left:10px;" class="brand" href=""><img src="images/19-g.png"/> Videobar on YouTube</a>
                     <!-- <button ng-click="testMongo();">savetest</button> -->
                     <input type="search" ng-show="hasAccessToken" style="height:19px!important;margin-top:4.5px!important;width:220px;" class="input-mini" size = '320px' ng-model="search.snippet.title" placeholder="Search">
                     
@@ -73,11 +73,13 @@
                          </ul>
                     </div>
             </nav>
-            <center><alert style = "position:inherit;height:2px;line-height:0.5px" ng-repeat="alert in alerts" type="alert.type" style ="width:320px;"><div ng-bind-html = "alert.msg"></div></alert></center>
+            <center><alert style = "position:inherit;line-height:7.5px" ng-repeat="alert in alerts_global" type="alert.type" style ="width:320px;"><div ng-bind-html = "alert.msg"></div></alert></center>
         </header>
             <br/><br/><br/><br/>
-        <section ng-controller="homeCtrl" ng-init="multiSelect=false">
-        
+        <section ng-controller="homeCtrl" ng-init="multi_select=true">
+            <!--  <pre>
+                {{dbLog}}
+            </pre> -->
             <article id ="resultVideos-container" ng-show = "hasAccessToken" style="margin-top:-10px;margin-right:26px;width:70%;margin:0 auto;">
                 <!--button ng-click="clearCollection()">Clear</button-->
                     <div ng-include = "'views/videoList.html'" ></div>
@@ -88,15 +90,16 @@
                             
                             <carousel>
                                 <slide ng-repeat="template in templates" active="template.active">
-                                    <div class="paddingThis highlight" style="border-radius: 4px 4px 4px 4px;margin-bottom:5px;">
+                                    <!-- <div class="paddingThis highlight" style="border-radius: 4px 4px 4px 4px;margin-bottom:5px;">
                                             <center>
                                                 <img ng-src="{{template.image}}" style="height:250px;"class="thumbnail shadowHighlight"/>
                                                 <div class="whiteText"><h4>{{template.name}}</h4><div ng-bind-html = "template.description"></div></div>
                                             </center>
-                                            <!--pre>{{template.xml_ids}}</pre-->
-                                        </div>
+                                        </div> -->
                                     <center>
-                                        <button ng-disabled = "selected.thereIs" ng-init="templates.isCollapsed='false'"  ng-click="templates.isCollapsed = !templates.isCollapsed;useTemplate(template,$index);" class="btn btn-primary btn-small">Use this template</button>
+                                        <button ng-disabled = "selected.thereIs" ng-init="templates.isCollapsed='false'"  ng-click="toggle(templates,template,$index);" class="btn btn-primary btn-small">Program this Videobar</button><br/><br/>
+                                        
+
                                    </center>
                                    </br>
                                     <div collapse= "templates.isCollapsed">
@@ -106,24 +109,47 @@
                                                     <accordion-group ng-repeat="video in selected"  is-open = "!multiMode">
                                                               
                                                         <accordion-heading>
-                                                            <center><button class="btn btn-inverse btn-small btn-block">{{video.name}}</button></center>
+                                                            <center><button class="btn btn-inverse btn-small btn-block" ng-show="multiMode">{{video.name}}</button></center>
                                                         </accordion-heading>  
+                                                                <center>
+                                                                    <div ng-switch on = "$index">
+                                                                        <div ng-switch-when= "0">
+                                                                            <b>Font Color:</b>&nbsp;
+                                                                            <div class="btn-group">
+                                                                                <button type="button" class="btn btn-primary btn-mini" ng-model="video.buttons.fontColor" btn-radio="'White'">White</button>
+                                                                                <button type="button" class="btn btn-primary btn-mini" ng-model="video.buttons.fontColor" btn-radio="'Black'">Black</button>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div ng-switch-default>
+                                                                                <b>Font Color:</b>&nbsp;
+                                                                                <div class="btn-group">
+                                                                                    <button type="button" class="btn btn-primary btn-mini" ng-model="video.buttons.fontColor" btn-radio="'White'">White</button>
+                                                                                    <button type="button" class="btn btn-primary btn-mini" ng-model="video.buttons.fontColor" btn-radio="'Black'">Black</button>
+                                                                                </div>
+                                                                                <button type="button" ng-click = "copyButtons(video);" class="btn btn-small btn-danger">
+                                                                                    Copy settings of first
+                                                                                </button>
+                                                                                <button type ="button" ng-click = "rearrangeOrder($index);" class="btn btn-small btn-danger">
+                                                                                    Make this first.
+                                                                                </button>
+                                                                        </div>
+                                                                    </div>
+                                                                </center>
+                                                                <br/>
 
-                                                            <div ng-switch on = "$index">
-                                                                <div ng-switch-when= "0"></div>
-                                                                <div ng-switch-default>
-
-                                                                    <center><button type="button" ng-click = "copyButtons(video);" class="btn btn-small btn-danger">
-                                                                        Copy settings of first
-                                                                    </button></center>
-                                                                    <br/>
-
-                                                                </div>
-                                                            </div>
                                                         <accordion close-others="true" >
 
-                                                            <accordion-group heading="{{button.name}}" ng-repeat="button in video.buttons">
-    
+                                                            <accordion-group heading = "{{button.name}}" ng-repeat="button in video.buttons">
+                                                            
+                                                            <div ng-switch on = "button.instances[0].id">
+                                                                <div ng-switch-when="videobar_channel">
+                                                                    <h4>{{button.name}}</h4>
+                                                                    <label><input type='checkbox' ng-model = "button.hide"/> Hide this</label>
+                                                                </div>
+                                                                <div ng-switch-default>
+                                                                    <h4>{{button.name}}</h4>
+                                                                </div>
+                                                            </div>
                                                             <div class="well">
                                                              <h4>{{button.name}}</h4>
                                                              <!-- <form name="newOptionForm" required> -->
@@ -137,15 +163,15 @@
                                                                 </tr>
                                                                 <tr ng-repeat="instance in button.instances">
                                                                     <td style="width:10px">
-                                                                        <a href="#" class="paddingXButton"><span ng-click="deleteItem($index,button)" ng-show="instance.editable" class="icon-remove"></span></a>
+                                                                        <div class="paddingXButton" ng-click="deleteItem($index,button);" ng-show="instance.editable"><span class="icon-remove"></span></div>
                                                                     </td>
-                                                                    <td><input type ="text" ng-model="instance.text" style="width:300px;" /></td>
-                                                                    <td ng-show = "button.allowEditDuration"><input type ="text" ng-model ="instance.duration.start" class="timeClass"/></td>
-                                                                    <td  ng-show = "button.allowEditDuration"><input type ="text" ng-model ="instance.duration.stop" class="timeClass" /></td>
+                                                                    <td><input type ="text" ng-model="instance.text" required style="width:300px;" /></td>
+                                                                    <td ng-show = "button.allowEditDuration"><input type ="text" ng-model ="instance.duration.start" required class="timeClass"/></td>
+                                                                    <td  ng-show = "button.allowEditDuration"><input type ="text" ng-model ="instance.duration.stop" required class="timeClass" /></td>
                                                                     <td>
                                                                         <div ng-switch on ="button.actiontype">
-                                                                            <div ng-switch-when="url">Insert URL : <input type ="url" ng-model ="instance.action.url"/></div>
-                                                                            <div ng-switch-when="time">Skip to : <input type ="text" ng-model ="instance.action.time" class="timeClass"/></div>
+                                                                            <div ng-switch-when="url">Insert URL : <input type ="url" required ng-model ="instance.action.url"/></div>
+                                                                            <div ng-switch-when="time">Skip to : <input type ="text" required ng-model ="instance.action.time" class="timeClass"/></div>
                                                                         </div>
                                                                         
                                                                     </td>
@@ -207,26 +233,35 @@
                                                 <!--button id="sendAnnotation" ng-click = "saveAnnotations('delete',template);" class="btn btn-danger btn-small" tooltip-placement="right" tooltip="Clear copied annotations">Clear Annotations</button> -->
                                             </center>
                                             <center>
+                                                <alert ng-repeat="alert in alerts" type="alert.type" style ="width:320px;" close = "closeAlert($index);"><div ng-bind-html = "alert.msg"></div></alert>
                                             <b>Annotations:</b>&nbsp;
-                                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "saveAnnotations('save',template);" class="btn btn-success btn-small">Save</button>
-                                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "openAnnotEditor();" class="btn btn-small" tooltip-placement="top" tooltip="Edit on youtube">Edit</button>
+                                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "saveAnnotations('publish',template);" class="btn btn-success btn-small" tooltip-placement="top" tooltip="Save and publish your annotations">Save</button>
+                                                <!-- <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "saveAnnotations('save',template);" class="btn btn-success btn-small">Save</button> -->
+                                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "openAnnotEditor();" class="btn btn-primary btn-small" tooltip-placement="top" tooltip="Edit on youtube">Edit</button>
+                                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "openYoutubeVideo();" class="btn btn-small" tooltip-placement="top" tooltip="Watch on youtube">View</button>
                                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "saveAnnotations('publish',template);" class="btn btn-primary btn-small" tooltip-placement="top" tooltip="Save and publish your annotations">Publish</button>
-                                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "saveAnnotations('delete',template);" class="btn btn-danger btn-small" tooltip-placement="top" tooltip="Clear mirrored annotations">Clear</button>
                                                 
+                                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "saveAnnotations('delete',template);" class="btn btn-danger btn-small" tooltip-placement="top" tooltip="Clear videobar annotations">Clear</button>
+                                                
+                                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "saveAnnotations('deleteall');" class="btn btn-inverse btn-small" tooltip-placement="top" tooltip="Clear all published annotations">Clear all</button>
+
                                             </center>
                                         </div>
                                     </div>
                                     
                                 </slide>
                             </carousel>
+
+
+
             </article>
         </section>
         <footer style="clear:both;">
-            <section><center><a href="#">Home</a> &nbsp; <a href="http://www.facebook.com/anyTVnetwork‎" target="_blank">Facebook</a> &nbsp; <a href="http://twitter.com/anyTVnetwork" target="_blank">Twitter</a> &nbsp; <a href="http://plus.google.com/109971475987405213729/videos" target="_blank">Google+</a> &nbsp; <a href="http://www.youtube.com/user/anyTVnetwork" target="_blank">YouTube</a><br>
-            <a href="http://www.any.tv">any.TV Limited</a> &copy; 2013 | Believe in You!
+            <section><center><a href="#">Home</a> &nbsp; <a href="https://www.facebook.com/anyTVnetwork" target="_blank">Facebook</a> &nbsp; <a href="http://twitter.com/anyTVnetwork" target="_blank">Twitter</a> &nbsp; <a href="http://plus.google.com/109971475987405213729/videos" target="_blank">Google+</a> &nbsp; <a href="http://www.youtube.com/user/anyTVnetwork" target="_blank">YouTube</a><br>
+            <a href="http://www.any.tv">any.TV Limited</a> &copy; 2013 | Believe in You.
          </center></section>
         </footer>
+        <br/>
         </div>
     </body>
 </html>

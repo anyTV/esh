@@ -4,6 +4,11 @@
 
 myExt.factory("dataServices",function($http,$q,$rootScope)
 {
+    var connectLocal = false;
+
+    var localURL = "http://local.mya.tm/google_extension/videobarAPI/";
+    var liveURL = "http://www.videobar.tm/apis/";
+
     var defaultCollName = "DefaultSettings";
     var defaultFields = {
         "multiSelect":false
@@ -140,67 +145,57 @@ myExt.factory("dataServices",function($http,$q,$rootScope)
         },
         insertLog2:function(param)
         {
+            var deferred = $q.defer();
             var optTemplate = arguments[1];
-            (optTemplate)?(url = "http://local.mya.tm/google_extension/videobarAPI/insert_video_template.php"):(url = "http://local.mya.tm/google_extension/videobarAPI/insert_video_copied.php")
-            
+
+            if(connectLocal)
+                (optTemplate)?(url = localURL+"insert_video_templates.php"):(url = localURL+"insert_video_copies.php");
+            else
+                (optTemplate)?(url = liveURL+"insert_video_templates.php"):(url = liveURL+"insert_video_copies.php");
+
             $http({method:'POST',
             url:url,
             data:param,
-            headers:{'Content-Type':'application/data'}
+            headers:{'Content-Type':'application/data','Authorization':google.getAccessToken()}
                 }).success(function(data,status,headers,config)
                 {
                     // console.log(status);
                     // console.log(data);
+                    $rootScope.dbLog = data;
+                    deferred.resolve(data);
+                    // $rootScope.alerts = []
+                    // $rootScope.alerts = [{type:'info',msg:data}]
                     
                 }).error(function(data,status,headers,config)
                 {
                     console.log("error!");
+                    deferred.reject({"msg":"Failed adding records to Database"});
                 });
-          
-        },
-        checkUserExist:function(email)
-        {
-            var deferred = $q.defer();
-            if(email)
-            {
-                $http({method:'GET',
-                url:"http://local.mya.tm/google_extension/videobarAPI/getUser.php",
-                params:{"user_email":email},
-                headers:{'Content-Type':'application/data'}
-                    }).success(function(data,status,headers,config)
-                    {
-                        // console.log(data);
-                        if(data.length!=0)
-                          deferred.resolve(true);
-                        else
-                            deferred.resolve(false);
-                        
-                    }).error(function(data,status,headers,config)
-                    {
-                        console.log("Error checking if exist!");
-                    });
-            }
-            else
-                deferred.reject("Please provide the email");
             return deferred.promise;
         },
         insertUser:function(param)
         {
             var deferred = $q.defer();
+            if(connectLocal)
+                var url = localURL+"insert_users.php";
+            else
+                var url = liveURL+"insert_users.php";
             if(param)
             {
                 $http({method:'POST',
-                url:"http://local.mya.tm/google_extension/videobarAPI/insertUser.php",
+                url:url,
                 data:param,
-                headers:{'Content-Type':'application/data'}
+                headers:{'Content-Type':'application/data','Authorization':google.getAccessToken()}
                     }).success(function(data,status,headers,config)
                     {
-                        console.log(data);
                         deferred.resolve(data);
                         
                     }).error(function(data,status,headers,config)
                     {
                         console.log("Error Inserting to database!");
+                        // $rootScope.hasAccessToken = false;
+                        $rootScope.alerts_global = [{type:"error",msg:"Unauthorize access!"}];
+                        // deferred.reject("Warning! ");
                     });
             }
             else
@@ -210,22 +205,26 @@ myExt.factory("dataServices",function($http,$q,$rootScope)
         },
         getAnnotationTemplates:function(v,alt)
         {
-            console.log(v);
             var deferred = $q.defer();
+            if(connectLocal)
+                var url = localURL+"get_video_templates.php";
+            else
+                var url = liveURL+"get_video_templates.php";
             if(v)
             {
-                $http({method:'GET',
-                url:"http://local.mya.tm/google_extension/videobarAPI/get_video_template.php",
+                $http({method:'POST',
+                url:url,
                 params:{"v":v,"alt":alt},
-                headers:{'Content-Type':'application/data','identifier':arguments[2]}
+                headers:{'Content-Type':'application/data','identifier':arguments[2],'Authorization':google.getAccessToken()}
                     }).success(function(data,status,headers,config)
                     {
-                        console.log(data);
+                        // logConsole("Template from DB",data);
                         deferred.resolve({"objects":data,"identifier":config.headers.identifier});
                         
                     }).error(function(data,status,headers,config)
                     {
-                        console.log("Error fetching from database!");
+                        $rootScope.alerts_global = [{type:"error",msg:"Error loading your settings!"}];
+                        deferred.reject("Error occured!");
                     });
             }
             else
@@ -233,10 +232,61 @@ myExt.factory("dataServices",function($http,$q,$rootScope)
                 
             return deferred.promise;
         },
+        checkVideos:function(email)
+        {
+            var deferred = $q.defer();
+            if(connectLocal)
+                var url = localURL+"get_video_templates.php";
+            else
+                var url = liveURL+"get_video_templates.php";
+            if(email)
+            {
+                $http({method:'POST',
+                url:url,
+                params:{"user_email":email},
+                headers:{'Content-Type':'application/data','Authorization':google.getAccessToken()}
+                    }).success(function(data,status,headers,config)
+                    {
+                        logConsole("Checked videos",data);
+                        if(data.length!=0)
+                        {
+                        }
+                        deferred.resolve(data);
+                        
+                    }).error(function(data,status,headers,config)
+                    {
+                        console.log("Error checking if exist!");
+                        deferred.reject("Error checking");
+                    });
+            }
+            else
+                deferred.reject("Please provide the email");
+            return deferred.promise;
+        },
         checkAnnotationTemplates:function(v)
         {
 
         },
+        loadTemplates:function()
+        {
+            if(connectLocal)
+                var url = localURL+"get_templates.php";
+            else
+                var url = liveURL+"get_templates.php";
+
+            $http({method:'POST',
+            url:url,
+            headers:{'Content-Type':'application/data','Authorization':google.getAccessToken()}
+                }).success(function(data,status,headers,config)
+                {
+                    $rootScope.templates=data;
+                    logConsole("Templates",$rootScope.templates);
+                    
+                }).error(function(data,status,headers,config)
+                {
+                    console.log("Error loading templates!");
+                });
+        }
     }
 });
 

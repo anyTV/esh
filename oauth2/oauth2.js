@@ -96,18 +96,16 @@ OAuth2.prototype.openAuthorizationCodePopup = function(callback) {
   // Store a reference to the callback so that the newly opened window can call
   // it later.
   window['oauth-callback'] = callback;
-    var that = this;
-  // Create a new tab with the OAuth 2.0 prompt
-  var tabIndex;
-  var tabId;
-  chrome.tabs.getSelected(null, function(tab) {
-    tabIndex = tab.index+1;  
-    tabId = tab.id; 
-      chrome.tabs.create({url: that.adapter.authorizationCodeURL(that.getConfig()),index:tabIndex,openerTabId:tabId},
-      function(tab) {
-          
-          
-          
+  var that = this;
+  chrome.tabs.getSelected(null,function(tab)
+  {
+    console.log(tab);
+      var tabIndex=tab.index+1;
+      var tabId = tab.id;
+      // Create a new tab with the OAuth 2.0 prompt
+      chrome.tabs.create({url: that.adapter.authorizationCodeURL(that.getConfig()),"index":tabIndex,"openerTabId":tabId},function(tab) 
+      {
+        console.log(tab);
         // 1. user grants permission for the application to access the OAuth 2.0
         // endpoint
         // 2. the endpoint redirects to the redirect URL.
@@ -118,8 +116,8 @@ OAuth2.prototype.openAuthorizationCodePopup = function(callback) {
         // (if there are multiple OAuth 2.0 adapters)
         // 6. Finally, the flow is finished and client code can call
         // myAuth.getAccessToken() to get a valid access token.
-      });   
-    });
+      });
+  });
 };
 
 /**

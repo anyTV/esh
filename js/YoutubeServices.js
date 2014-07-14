@@ -58,14 +58,14 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
         $http({method:'GET',
         url:sendURL2,
         params:{alt:"json"},
-        headers:{'Content-Type':'*/*','Authorization':'OAuth '+google.getAccessToken(),"GData-Version":2,"Cache-Control":"no-cache"}
+        headers:{'Content-Type':'*/*','Authorization':'Bearer '+google.getAccessToken(),"GData-Version":2,"Cache-Control":"no-cache"}
             }).success(function(data,status,headers,config)
             {
                 deferred.resolve(data,status);
                 
             }).error(function(data,status,headers,config)
             {
-                console.log("error!");
+                logConsole("Error fetching username. Status",status);
                 deferred.resolve(data,status);
             });
         return deferred.promise;
@@ -73,10 +73,6 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
     
     function process()
     {
-        console.log(getMode());
-        console.log(getToken());
-        console.log(getSourceVideoInfo());
-        
         var videos = $rootScope.selected;
         var processCount = videos.length;
         var deferred = $q.defer();
@@ -86,10 +82,7 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
                             
                             // var cleanAlert = '\[|\]|"';
                             // var cleanAlert2 = "\{id:(.+?):|\}|,duration:(.+?)(?=(,|\]))";
-                            
-                            console.log(isTemplate());
-                            
-                            
+                            logConsole("Is that from template?",isTemplate());
                             
                             if(getMode() == "publish")
                             {
@@ -101,29 +94,35 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
                                     videos.forEach(function(video){
                                         
                                         xmlList[i] = annotationsServices.updateXML(publishXML,{"video":video.id,"token":getToken()});
-                                        console.log(xmlList[i]);
+                                        logConsole("Publish XML", xmlList[i]);
                                         
                                         backgroundServices.sendXML(xmlList[i],getMode(),video).then(function(result)
                                         {
-                                            console.log(result);
-                                            if(result.status == 200)
-                                                finished.push(result.video);
-                                            else
-                                                unfinished.push(result.video);
-                                                
-                                            // var strFinishedVids = JSON.stringify(finished).replace(new RegExp(cleanAlert,"g"),"").replace(new RegExp(cleanAlert2,"g"),"");
-                                            // var strUnfinishedVids = JSON.stringify(unfinished).replace(new RegExp(cleanAlert,"g"),"").replace(new RegExp(cleanAlert2,"g"),"");
-                                            // $rootScope.alerts = [
-                                            // {type:'success',msg:'<span class="label label-info>'+finished.length+'</span> Successfully Published. <abbr title = "'+strFinishedVids+'"><span class="label label-info">Info</span></abbr>'+''},
-                                                                // ];
-//                                             
-                                            // if(unfinished.length!=0)
-                                                // $rootScope.alerts.push({type:'error',msg:'<span class="label label-error>'+unfinished.length+'</span> Failed. <abbr title = "'+strUnfinishedVids+'"><span class = "label label-info">Info</span></abbr>'});
+                                            var indexOfVideo = -1;
+                                            for(var i =0;i<videos.length;i++)
+                                                if(videos[i].id === result.video.id){indexOfVideo=i;break;}
+
+                                             backgroundServices.getAnnotation("http://www.youtube.com/watch?v="+result.video.id,false,indexOfVideo).then(function(xmlResult)
+                                            {
+                                                console.log(videos[xmlResult.identifier]);
+                                                videos[xmlResult.identifier]["xml"] = xmlResult.xml;
+
+                                                logConsole("Publish result", result);
+                                                if(result.status == 200)
+                                                    finished.push(result.video);
+                                                else
+                                                    unfinished.push(result.video);
+                                                    
                                             
-                                            $rootScope.completedData = {"finished":finished,"unfinished":unfinished};
-                                            // return result here
-                                            if(finished.length+unfinished.length == processCount)
-                                                deferred.resolve({"finished":finished,"unfinished":unfinished,"mode":result.mode}); 
+                                                $rootScope.completedData = {"finished":finished,"unfinished":unfinished};
+                                                // return result here
+                                                if(finished.length+unfinished.length == processCount)
+                                                    deferred.resolve({"finished":finished,"unfinished":unfinished,"mode":result.mode}); 
+                                             
+                                            });
+
+
+
                                         });
                                         i++;
                                     });
@@ -142,18 +141,17 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
                                                     
                                                         // annotationsServices.getAnnotationTemplateOnly(getTemplate(),video).then(function(xml)
                                                         // {   
-                                                            console.log(getTemplate());
                                                             // xmlClearList[i] = xml;
                                                             xmlClearList[i] = annotationsServices.getAnnotationTemplateOnly(getTemplate(),video);
                                                             var xmlString = new XMLSerializer().serializeToString(xmlClearList[i]);
                                                             // xmlString = xmlString.replace(/http:\/\/www\.youtube\.com\/watch\?v=[-A-Za-z0-9_]{11}/g,'http://www.youtube.com/watch?v='+video.id);
                                                             xmlClearList[i] = annotationsServices.updateXML(xmlString,{"video":video.id,"token":getToken()},getMode());
-                                                            console.log(xmlClearList[i]);
+                                                            logConsole("Clear template XML",xmlClearList[i]);
                                                             backgroundServices.sendXML(xmlClearList[i],getMode(),video).then(function(result)
                                                             {
                                                                 if(result.status == 200) // then publish
                                                                 {
-                                                                    console.log(result);   
+                                                                    logConsole("Clear template result",result);   
                                                                     // var newXML = annotationsServices.updateXML(publishXML,{"video":result.video.id,"token":getToken()});
                                                                     
                                                                     // backgroundServices.sendXML(newXML,"publish",result.video).then(function(published)
@@ -178,54 +176,44 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
                                                     var xmlList = [], i=0;
                                                     videos.forEach(function(video)
                                                     {
-                                                        console.log($rootScope.multiSelect);
-                                                        // if($rootScope.multiSelect == false || videos.length == 1)
-                                                            var result = annotationsServices.customizeTemplate(video);
-                                                        // else
-                                                        // {
-                                                        //     console.log("many");
-                                                        //     var result = annotationsServices.analyzeIds(getTemplate().url,getTemplate().xml_ids,video)
-                                                        //     setTemplate(result.objects,"buttons");
-                                                        //     console.log(getTemplate());
-                                                        //     var result = annotationsServices.customizeTemplate(getTemplate(),video);
-                                                        // }
+                                                        var result = annotationsServices.customizeTemplate(video);      
                                                         xmlList[i] = result.xml;
-                                                        // video.buttons = result.buttons;
                                                        i++;
                                                     });
                 
                                                     i=0;
-                                                    videos.forEach(function(video){
-                                                        
+                                                    videos.forEach(function(video) {
                                                             var xmlString = new XMLSerializer().serializeToString(xmlList[i]);
-                                                            // xmlString = xmlString.replace(/http:\/\/www\.youtube\.com\/watch\?v=[-A-Za-z0-9_]{11}/g,'http://www.youtube.com/watch?v='+video.id);
                                                             xmlList[i] = annotationsServices.updateXML(xmlString,{"video":video.id,"token":getToken()},getMode());
-                                                            console.log(xmlList[i]);
-                                                            video.xml = new XMLSerializer().serializeToString(xmlList[i]);
+                                                            logConsole("Save template XML",xmlList[i]);
+                                                            // video.xml = new XMLSerializer().serializeToString(xmlList[i]);
                                                             backgroundServices.sendXML(xmlList[i],getMode(),video).then(function(result)
                                                             {
-                                                                        console.log(result.mode);
-                                                                        (result.status == 200)?(finished.push(result.video)):(unfinished.push(result.video));
-                                                                        
-                                                                        $rootScope.completedData = {"finished":finished,"unfinished":unfinished};
-                                                                        // return result; 
-                                                                        // deleteTemplateObject(buttons);
-                                                                        // console.log(getTemplate());
-                                                                        if(finished.length+unfinished.length == processCount)
-                                                                            deferred.resolve({"finished":finished,"unfinished":unfinished,"mode":result.mode});  
+                                                                logConsole("Save template result",result);
+                                                                (result.status == 200)?(finished.push(result.video)):(unfinished.push(result.video));
+                                                                
+                                                                $rootScope.completedData = {"finished":finished,"unfinished":unfinished};
+                                                                // return result; 
+                                                                if(finished.length+unfinished.length == processCount)
+                                                                    deferred.resolve({"finished":finished,"unfinished":unfinished,"mode":result.mode});  
                                                             });
                                                         
                                                         i++;
                                                     });
                                                 }
-                                                    
-                                                // console.log(templateXML.getElementsByTagName("annotations"));
-                                                // console.log(changeNodeName("annotation","deletedItem",templateXML.getElementsByTagName("annotations")[0]));
-                                                // console.log(templateXML);
                                 }
                                 else
                                 {
-                                    backgroundServices.getAnnotation(getSourceVideoInfo().url).then(function(xmlString,status)
+                                    //OVERRIDE
+                                    logConsole("MODE",getMode());
+                                    if(getMode() == "deleteall")
+                                    {
+                                        setMode("delete");
+                                        var annotation_url = "http://www.youtube.com/watch?v="+videos[0].id;
+                                    }
+                                    else
+                                        var annotation_url = getSourceVideoInfo().url;
+                                    backgroundServices.getAnnotation(annotation_url).then(function(xmlString,status)
                                     {
                                         getChannelUsername($rootScope.userInfo.channel.id).then(function(channels,status)
                                         {
@@ -236,46 +224,32 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
                                             
                                             /******************************************************/
                                             
+                                            
                                             var xmlList = [], i=0;
-                                            videos.forEach(function(video){
-                                                xmlString = xmlString.replace(/http:\/\/www\.youtube\.com\/watch\?v=[-A-Za-z0-9_]{11}/g,'http://www.youtube.com/watch?v='+video.id);
+                                            videos.forEach(function(video) {
+                                                logConsole("Copy annotations from",getSourceVideoInfo());
+                                                if(getSourceVideoInfo())
+                                                {
+                                                    var videoIdREgex ="http:\/\/www\.youtube\.com/watch\\?v="+getSourceVideoInfo().id;
+                                                    xmlString = xmlString.replace(new RegExp(videoIdREgex,"g"),'http://www.youtube.com/watch?v='+video.id);
+                                                }
                                                 xmlList[i] = annotationsServices.updateXML(xmlString,{"video":video.id,"token":getToken()},getMode());
                                                 
-                                                if(getMode() == "save")
-                                                {
+                                                if(getMode() == "save") {
                                                     var annotationsSorted = annotationsServices.decodeXML(xmlList[i],hmsToSeconds(getSourceVideoInfo().contentDetails.duration));
                                                     annotationsServices.fixTime(annotationsSorted,{"source":hmsToSeconds(getSourceVideoInfo().contentDetails.duration),"destination":hmsToSeconds(video.duration)}); 
                                                 }
                                                 
-                                                console.log(xmlList[i]);
-                                                video.xml = new XMLSerializer().serializeToString(xmlList[i]);
-                                                backgroundServices.sendXML(xmlList[i],getMode(),video).then(function(result)
-                                                {
-                                                    if(result.status == 200 && getMode() == "delete") // then publish
-                                                    {
-                                                        console.log(result);
-                                                        // var newXML = annotationsServices.updateXML(publishXML,{"video":result.video.id,"token":getToken()});
-                                                        // backgroundServices.sendXML(newXML,"publish",result.video).then(function(published)
-                                                        // {
-                                                            // console.log(published);
-                                                            (result.status == 200)?(finished.push(result.video)):(unfinished.push(result.video));
-//                                                                 
-                                                            // $rootScope.completedData = {"finished":finished,"unfinished":unfinished};
-                                                            // // return published;  
-                                                            if(finished.length+unfinished.length == processCount)
-                                                                deferred.resolve({"finished":finished,"unfinished":unfinished,"mode":result.mode}); 
-                                                        // });
-                                                    }
-                                                    else
-                                                    {
-                                                            console.log(result.mode);
-                                                            (result.status == 200)?(finished.push(result.video)):(unfinished.push(result.video));
-                                                            
-                                                            $rootScope.completedData = {"finished":finished,"unfinished":unfinished};
-                                                            // return result; 
-                                                            if(finished.length+unfinished.length == processCount)
-                                                                deferred.resolve({"finished":finished,"unfinished":unfinished,"mode":result.mode});  
-                                                    }
+                                                logConsole("Save XML",xmlList[i]);
+                                                // video.xml = new XMLSerializer().serializeToString(xmlList[i]);
+                                                backgroundServices.sendXML(xmlList[i],getMode(),video).then(function(result) {
+                                                    logConsole("Save result",result);
+                                                    (result.status == 200)?(finished.push(result.video)):(unfinished.push(result.video));
+                                                    if(getMode() != "delete") 
+                                                        $rootScope.completedData = {"finished":finished,"unfinished":unfinished};
+                                                        // return result; 
+                                                    if(finished.length+unfinished.length == processCount)
+                                                        deferred.resolve({"finished":finished,"unfinished":unfinished,"mode":result.mode});  
                                                 });
                                                 i++;
                                             });
@@ -303,16 +277,14 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
             var deferred = $q.defer();
             $http({method:'GET',
             url:youtube.queryURL("",{fields:"displayName"},{}),
-            headers:{'Content-Type':'application/data','Authorization':'OAuth '+google.getAccessToken()}
+            headers:{'Content-Type':'application/data','Authorization':'Bearer '+google.getAccessToken()}
                 }).success(function(data,status,headers,config)
                 {
-                    // console.log(status);
-                    console.log(data);
                     deferred.resolve(data,status);
                     
                 }).error(function(data,status,headers,config)
                 {
-                    console.log("error!");
+                    logConsole("Unable to find your GPlus info. Status",status);
                     deferred.reject({"msg":"Unable to find your GPlus info.","status":status});
                 });
                 
@@ -324,16 +296,14 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
             var deferred = $q.defer();
             $http({method:'GET',
             url:"https://www.googleapis.com/oauth2/v2/userinfo",
-            headers:{'Content-Type':'application/data','Authorization':'OAuth '+google.getAccessToken()}
+            headers:{'Content-Type':'application/data','Authorization':'Bearer '+google.getAccessToken()}
                 }).success(function(data,status,headers,config)
                 {
-                    // console.log(status);
-                    console.log(data);
                     deferred.resolve(data,status);
                     
                 }).error(function(data,status,headers,config)
                 {
-                    console.log("error!");
+                    logConsole("Unable to find your channel. Status",status);
                     deferred.reject({"msg":"Unable to find your channel.","status":status});
                 });
                 
@@ -348,23 +318,22 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
                 {
                     // mine:true                    
                 })+Math.random(),
-            headers:{'Content-Type':'application/data','Authorization':'OAuth '+google.getAccessToken()}
+            headers:{'Content-Type':'application/data','Authorization':'Bearer '+google.getAccessToken()}
                 }).success(function(data,status,headers,config)
                 {
-                    // console.log(status);
-                    console.log(data);
                     deferred.resolve(data,status);
                     
                 }).error(function(data,status,headers,config)
                 {
-                    console.log("error!");
+                    logConsole("Unable to find your channel. Status",status);
                     deferred.reject({"msg":"Unable to find your channel.","status":status});
                 });
                 
             return deferred.promise;
         },
-        queryPlayListItems:function(plId, pageToken)
+        queryPlayListItems:function(plId)
         {
+            var pageToken = arguments[1];
             var youtube = new YoutubeResource({type:"listPlaylistItems"});
             var deferred = $q.defer();
             $http({method:'GET',
@@ -374,16 +343,14 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
                     maxResults:"20",
                     pageToken:pageToken,
                     fields:'items/snippet(publishedAt,channelId,title,description,thumbnails,resourceId),pageInfo,nextPageToken'
-                })+Math.random(),
-            headers:{'Content-Type':'application/data','Authorization':'OAuth '+google.getAccessToken()}
+                })+"&random="+Math.random(),
+            headers:{'Content-Type':'application/data','Authorization':'Bearer '+google.getAccessToken()}
                 }).success(function(data,status,headers,config)
                 {
-                    console.log(data);
-                    deferred.resolve(data,status);
-                    
+                    deferred.resolve(data,status);   
                 }).error(function(data,status,headers,config)
                 {
-                    console.log("error!");
+                    logConsole("Unable to query your videos. Status",status);
                     deferred.reject({"msg":"Unable to query your videos.","status":status});
                 });
                 
@@ -395,7 +362,7 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
             var ids = JSON.stringify(vidIds);
             ids = ids.replace(/"/g,"");
             ids = ids.replace(/\[|\]/g,"");
-            console.log(ids);
+            // console.log(ids);
             var youtube = new YoutubeResource({type:"listVideos"});
             var deferred = $q.defer();
             $http({method:'GET',
@@ -405,15 +372,14 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
                     maxResults:"50",
                     fields:'items/contentDetails,id'
                 }),
-            headers:{'Content-Type':'application/data','Authorization':'OAuth '+google.getAccessToken()}
+            headers:{'Content-Type':'application/data','Authorization':'Bearer '+google.getAccessToken()}
                 }).success(function(data,status,headers,config)
                 {
-                    console.log(data);
                     deferred.resolve(data,status);
                     
                 }).error(function(data,status,headers,config)
                 {
-                    console.log("error!");
+                    logConsole("Unable to query video durations. Status",status);
                     deferred.reject({"msg":"Unable to query video durations.","status":status});
                 });
                 
@@ -436,8 +402,6 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
                 setMode(mode);
                 setSourceVideoInfo($rootScope.sourceVideoInfo);
                 setTemplate(template);
-                console.log(template);
-                console.log(isTemplate());
                 process().then(function(result){deferred.resolve(result);});
             }
             else
@@ -453,7 +417,6 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
                                 var to = request.source.substring(from).indexOf(",");
                                 var auth_token = request.source.substring(from,to+from);
                                 auth_token = auth_token.replace(/"/g,"");
-                                console.log(auth_token);
                                 var auth = auth_token.split(" ");
                                 if(auth[0] == "auth_token:")
                                     token = auth[1];
@@ -475,7 +438,6 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
                             if(err = chrome.extension.lastError)
                                 alert("There was an error injecting script : "+err.message);
                             chrome.tabs.remove(tab.id);
-                            console.log(token);
                             setToken(token);
                             continueProcess = false;
                             

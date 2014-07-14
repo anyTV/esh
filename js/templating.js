@@ -4,37 +4,29 @@
 
 function templateController($rootScope,$scope,annotationsServices,dataServices)
 {
-    // $scope.templateOptions = "";
-
-    $scope.testData = function(template)
-    {
-        var params = {"video_id":$rootScope.selected[0].id,
-                        "user_email":$rootScope.userInfo.email,
-                        "title":$rootScope.selected[0].name,
-                        "template_id":template.id,
-                        "template_buttons":template.buttons,
-                        "xml_string":$rootScope.selected[0].xml,
-                        "mode":"save"};
-        // console.log(params);
-        dataServices.insertLog2(params);
-    }
-    // $scope.getData = function(param)
+    
     $scope.decodeURLToTime = function(url)
     {
         var time = getParameterByName("t",url);
-        // console.log(url);
-       
     }
 
     $scope.copyButtons = function(video)
     {
-        video.buttons = $rootScope.selected[0].buttons;
+        video.buttons = angular.copy($rootScope.selected[0].buttons);
+        video.buttons["fontColor"] = angular.copy($rootScope.selected[0].buttons.fontColor);
+        console.log(video.buttons);
+    }
+    $scope.rearrangeOrder = function(index)
+    {
+        console.log(index);
+        $rootScope.selected.swapItems(0,index);
     }
 
     
     $scope.useTemplate = function(template,index)
     {
-        console.log(template);
+        $rootScope.alerts_global = [{type:'info',msg:'Loading your settings...'}];
+        logConsole("Template Used",template);
         
         // if($rootScope.multiSelect == false || $rootScope.selected.length == 1 )
         // {
@@ -46,27 +38,48 @@ function templateController($rootScope,$scope,annotationsServices,dataServices)
                 $scope.multiMode = false;
             else
                 $scope.multiMode = true;
+
+            var result = [];
             angular.forEach($rootScope.selected,function(video)
             {
                 annotationsServices.checkVideoTemplate(template,video,i).then(function(data)
                 {
-                    
-                    console.log(data);
+                    result[i] = "";
                     // if(data.objects.template_buttons)
                     // {
                     //     console.log("loading annotations from youtube");
                     //     // var result = annotationsServices.analyzeAnnotations(template.xml_ids,data.xml);
                     if(data['default'])
                     {
-                        annotationsServices.checkOnYoutube(template,video,i).then(function(yt)
+                        annotationsServices.checkOnYoutube(template,video,data.identifier).then(function(yt)
                         {
-                            if(yt.templateUsed)
+                            result[yt.identifier] = yt;
+                            console.log(result[yt.identifier]);
+                            if(result[yt.identifier].templateUsed)
                             {
-                                annotationsServices.analyzeAnnotations(template.xml_ids,yt.xml);
+                                result[yt.identifier] = annotationsServices.analyzeAnnotations(template.xml_ids,yt.xml);
+                                $rootScope.selected[yt.identifier].buttons = result[yt.identifier].objects;
+                                $rootScope.selected[yt.identifier].template_id = template.id;
+                                angular.forEach($rootScope.selected[yt.identifier].buttons,function(button)
+                                {
+                                    if(button.actiontype == "url" && button.addable == true)
+                                    {
+                                        button.allowEditDuration = true;
+                                    }
+                                });
                             }
                             else
                             {
-                                
+                                console.log($rootScope.selected[yt.identifier]);
+                                $rootScope.selected[yt.identifier].buttons = annotationsServices.analyzeIds(template.xml_ids,video,i).objects;
+                                $rootScope.selected[yt.identifier].template_id = template.id;
+                                angular.forEach($rootScope.selected[yt.identifier].buttons,function(button)
+                                {
+                                    if(button.actiontype == "url" && button.addable == true)
+                                    {
+                                        button.allowEditDuration = true;
+                                    }
+                                });
                             }
                         });
                     }
@@ -75,6 +88,13 @@ function templateController($rootScope,$scope,annotationsServices,dataServices)
                         $rootScope.templates[index].buttons = data.objects;
                         $rootScope.selected[data.identifier].buttons = data.objects;
                         $rootScope.selected[data.identifier].template_id = data.template_id;
+                        angular.forEach($rootScope.selected[data.identifier].buttons,function(button)
+                        {
+                            if(button.actiontype == "url" && button.addable == true)
+                            {
+                                button.allowEditDuration = true;
+                            }
+                        });
                     }
                           
                     // }
@@ -86,16 +106,14 @@ function templateController($rootScope,$scope,annotationsServices,dataServices)
                     //     $rootScope.selected[result.identifier].buttons = result.objects;
                     // }
                         
-                        angular.forEach($rootScope.templates[index].buttons,function(button)
-                        {
-                            if(button.actiontype == "url" && button.addable == true)
-                            {
-                                button.allowEditDuration = true;
-                            }
-                        });
-                     
+                     $rootScope.alerts_global = [];
+                    // video.buttons = {fontColor:"White"};
+                },function(reason)
+                {
+                    $rootScope.templates.isCollapsed = true;
                 });
-                i++;            
+                i++;    
+
             });
 
         // }
@@ -110,31 +128,62 @@ function templateController($rootScope,$scope,annotationsServices,dataServices)
     
     $scope.saveItem = function(video,btnIndex,button)
     {
-        console.log(button);
         var newText = video.newText,newStart = video.newStart,newStop = video.newStop,newAction = video.newAction;
         
         var duration = {"start":newStart,"stop":newStop};
-        var length = button.instances.length
-        var base = button.instances
-        console.log(base[0]);
+        var length = button.instances.length;
+        var base = button.instances;
         // base[0].action.childNodes[0].attributes[1].value = newAction;
-        button.instances.push({"id":annotationsServices.getIdPrefix()+base[0].id+"_"+(length+1),"action":newAction,"text":newText,"textId":annotationsServices.getIdPrefix()+base[0].textId+"_"+(length+1),"duration":duration,"editable":true});
+        button.instances.push({"id":annotationsServices.getIdPrefix()+base[0].id+"_"+(length),"action":newAction,"text":newText,"textId":annotationsServices.getIdPrefix()+base[0].textId+"_"+(length),"duration":duration,"editable":true});
         button.edited = true;
         video.newText = "",video.newStart = "",video.newStop = "",video.newAction = "";video.addMode = false;
+        console.log(button);
     }
     
-    $scope.deleteItem = function(id,buttons)
+    $scope.deleteItem = function(id,button)
     {
-        console.log(id);
-        console.log(buttons);
-        buttons.instances.splice(id,1);
+        button.instances.splice(id,1);
+        var base = button.instances[0];
+        var i=0;
+        angular.forEach(button.instances,function(instance)
+        {
+            if(i!=0)
+            {
+                instance.id = annotationsServices.getIdPrefix() + base.id+"_"+i;
+                instance.textId = annotationsServices.getIdPrefix() + base.textId+"_"+i;
+            }
+            i++;
+        });
+        console.log(button);
     }
     
     $scope.editItem = function(instance,button)
     {
-        console.log(instance);
-        console.log(button);
         button.edited = true;
+    }
+
+    $scope.toggle = function(templates,template,index)
+    {
+        $rootScope.alerts = [];
+        if(templates.isCollapsed)
+        {
+            templates.isCollapsed = false;
+            $scope.useTemplate(template,index);
+        }
+        else
+        {
+            templates.isCollapsed = true;
+            $scope.pane = [];
+            angular.forEach($scope.selected,function(video)
+            {
+                video.buttons = [];
+            });
+
+            angular.forEach($scope.templates,function(template)
+            {
+                template.buttons = [];
+            });
+        }
     }
 }
 
@@ -146,3 +195,8 @@ Array.prototype.remove = function(from, to) {
   this.length = from < 0 ? this.length + from : from;
   return this.push.apply(this, rest);
 };
+
+Array.prototype.swapItems = function(a, b){
+    this[a] = this.splice(b, 1, this[a])[0];
+    return this;
+}

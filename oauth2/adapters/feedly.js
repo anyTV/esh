@@ -1,31 +1,25 @@
-OAuth2.adapter('google', {
+OAuth2.adapter('feedly', {
   authorizationCodeURL: function(config) {
-    return ('https://accounts.google.com/o/oauth2/auth?' +
-      // 'approval_prompt=force&' +
+    return ('https://cloud.feedly.com/v3/auth/auth?' +
+      'response_type=code&' +
       'client_id={{CLIENT_ID}}&' +
       'redirect_uri={{REDIRECT_URI}}&' +
-      'scope={{API_SCOPE}}&' +
-      'access_type=offline&' +
-      'response_type=code')
+      'scope={{API_SCOPE}}')
         .replace('{{CLIENT_ID}}', config.clientId)
         .replace('{{REDIRECT_URI}}', this.redirectURL(config))
         .replace('{{API_SCOPE}}', config.apiScope);
   },
 
   redirectURL: function(config) {
-    return 'http://www.google.com/robots.txt';
+    return 'http://www.feedly.com/robots.txt';
   },
 
   parseAuthorizationCode: function(url) {
-    var error = url.match(/[&\?]error=([^&]+)/);
-    if (error) {
-      throw 'Error getting authorization code: ' + error[1];
-    }
-    return url.match(/[&\?]code=([\w\/\-]+)/)[1];
+    return url.match(/[&\?]code=([^&]+)/)[1];
   },
 
   accessTokenURL: function() {
-    return 'https://accounts.google.com/o/oauth2/token';
+    return 'https://cloud.feedly.com/v3/auth/token';
   },
 
   accessTokenMethod: function() {
@@ -37,14 +31,15 @@ OAuth2.adapter('google', {
       code: authorizationCode,
       client_id: config.clientId,
       client_secret: config.clientSecret,
-      redirect_uri: this.redirectURL(config),
-      grant_type: 'authorization_code'
+      grant_type: "authorization_code",
+      redirect_uri: this.redirectURL(config)
     };
   },
 
   parseAccessToken: function(response) {
     var parsedResponse = JSON.parse(response);
     return {
+      userId: parsedResponse.id,
       accessToken: parsedResponse.access_token,
       refreshToken: parsedResponse.refresh_token,
       expiresIn: parsedResponse.expires_in

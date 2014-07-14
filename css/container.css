@@ -23,7 +23,7 @@
     {
         padding:7px;
         width:160px;
-        height:150px;
+        height:130px;
         margin:0px auto;
     }
     #img-video
@@ -31,7 +31,7 @@
         width:120px;
     }
     #post-selected_, #post-selected_1{
-        height:120px;
+        height:110px;
         padding:5px;
     }
     
@@ -84,13 +84,23 @@
     #post-list
     {
         overflow-y:scroll;
-        height:320px;
+        min-height: 70px;
+        max-height:320px;
     }
     #resultVideos-container
     {
         margin:0;
         padding-left:5px;
         padding-right:5px;
-        padding-bottom:10px;    }
+        padding-bottom:10px;
+    }
+
+    .vid-title-container
+    {
+        width:10em;
+        text-overflow:ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
    
     
