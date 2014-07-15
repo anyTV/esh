@@ -4,7 +4,7 @@
 
 myExt.factory("dataServices",function($http,$q,$rootScope)
 {
-    var connectLocal = false;
+    var connectLocal = true;
 
     var localURL = "http://local.mya.tm/google_extension/videobarAPI/";
     var liveURL = "http://www.videobar.tm/apis/";
@@ -149,9 +149,9 @@ myExt.factory("dataServices",function($http,$q,$rootScope)
             var optTemplate = arguments[1];
 
             if(connectLocal)
-                (optTemplate)?(url = localURL+"insert_video_templates.php"):(url = localURL+"insert_video_copies.php");
+                (optTemplate)?(url = localURL+"video_templates.php"):(url = localURL+"video_copies.php");
             else
-                (optTemplate)?(url = liveURL+"insert_video_templates.php"):(url = liveURL+"insert_video_copies.php");
+                (optTemplate)?(url = liveURL+"video_templates.php"):(url = liveURL+"video_copies.php");
 
             $http({method:'POST',
             url:url,
@@ -177,9 +177,9 @@ myExt.factory("dataServices",function($http,$q,$rootScope)
         {
             var deferred = $q.defer();
             if(connectLocal)
-                var url = localURL+"insert_users.php";
+                var url = localURL+"users.php";
             else
-                var url = liveURL+"insert_users.php";
+                var url = liveURL+"users.php";
             if(param)
             {
                 $http({method:'POST',
@@ -207,14 +207,14 @@ myExt.factory("dataServices",function($http,$q,$rootScope)
         {
             var deferred = $q.defer();
             if(connectLocal)
-                var url = localURL+"get_video_templates.php";
+                var url = localURL+"video_templates.php";
             else
-                var url = liveURL+"get_video_templates.php";
+                var url = liveURL+"video_templates.php";
             if(v)
             {
-                $http({method:'POST',
+                $http({method:'GET',
                 url:url,
-                params:{"v":v,"alt":alt},
+                params:{"v":v, "alt":alt, "app_id":chrome.runtime.id},
                 headers:{'Content-Type':'application/data','identifier':arguments[2],'Authorization':google.getAccessToken()}
                     }).success(function(data,status,headers,config)
                     {
@@ -236,15 +236,15 @@ myExt.factory("dataServices",function($http,$q,$rootScope)
         {
             var deferred = $q.defer();
             if(connectLocal)
-                var url = localURL+"get_video_templates.php";
+                var url = localURL+"video_templates.php";
             else
-                var url = liveURL+"get_video_templates.php";
+                var url = liveURL+"video_templates.php";
             if(email)
             {
-                $http({method:'POST',
+                $http({method:'GET',
                 url:url,
-                params:{"user_email":email},
-                headers:{'Content-Type':'application/data','Authorization':google.getAccessToken()}
+                params:{"user_email":email, "app_id":chrome.runtime.id},
+                headers:{'Content-Type':'application/data', 'Authorization':google.getAccessToken()}
                     }).success(function(data,status,headers,config)
                     {
                         logConsole("Checked videos",data);
@@ -270,13 +270,13 @@ myExt.factory("dataServices",function($http,$q,$rootScope)
         loadTemplates:function()
         {
             if(connectLocal)
-                var url = localURL+"get_templates.php";
+                var url = localURL+"templates.php";
             else
-                var url = liveURL+"get_templates.php";
+                var url = liveURL+"templates.php";
 
-            $http({method:'POST',
+            $http({method:'GET',
             url:url,
-            headers:{'Content-Type':'application/data','Authorization':google.getAccessToken()}
+            headers:{'Content-Type':'application/data'}
                 }).success(function(data,status,headers,config)
                 {
                     $rootScope.templates=data;

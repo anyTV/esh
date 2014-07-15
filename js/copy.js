@@ -21,16 +21,13 @@ function homeCtrl($scope,youtubeServices,$rootScope,backgroundServices,dataServi
     $rootScope.hasAccessToken = google.hasAccessToken();
     loadXML(backgroundServices,$rootScope);
     dataServices.loadTemplates();
-    chrome.tabs.getSelected(null, function(tab) 
-    { 
+    chrome.tabs.getSelected(null, function(tab) {
         $scope.pageTitle = tab.title.replace(/- YouTube/g,"");
         $scope.pageTitleShort = tab.title.replace(/- YouTube/g,"").substring(0,20) + "...";
         
         var annotationVId = getParameterByName("v",tab.url);
-        if(annotationVId != "")
-        {
-            youtubeServices.queryVideoList(annotationVId).then(function(result)
-            {
+        if(annotationVId != "") {
+            youtubeServices.queryVideoList(annotationVId).then(function(result) {
                 logConsole("Query source video duration",result.items[0]);
                 $rootScope.sourceVideoInfo = result.items[0];
                 $rootScope.sourceVideoInfo.url = tab.url;
@@ -39,32 +36,31 @@ function homeCtrl($scope,youtubeServices,$rootScope,backgroundServices,dataServi
         }
     });
     
-    youtubeServices.getUserInfo().then(function(data,status)
-    {
+    youtubeServices.getUserInfo().then(function(data, status) {
         $rootScope.userInfo = data;
         dataServices.insertUser({"email":$rootScope.userInfo.email,"appToken":google.getAccessToken(),"appId":chrome.runtime.id}).then(function(insertResult) {
-            dataServices.checkVideos($rootScope.userInfo.email).then(function(dbVideos,status)
-            {
+            //check video annotations in database
+            dataServices.checkVideos($rootScope.userInfo.email).then(function(dbVideos, status) {
                 $scope.dbVideos = dbVideos;
+                //apply the mode from checked videos
                 $scope.findMode2();
-            },function(reason)
-            {
+            }, function(reason) {
                 $rootScope.error_checkVideo = true;
                 $scope.findMode2();
             });
         });
 
         document.getElementById('resultVideos-container').style.display= "block";
-        youtubeServices.queryChannels().then(function(datas,status)
-        {
+        youtubeServices.queryChannels().then(function(datas,status) {
             $rootScope.userInfo.channel = datas.items[0];
             
             youtubeServices.queryPlayListItems($rootScope.userInfo.channel.contentDetails["relatedPlaylists"].uploads).then(function(datas,status) {
                 $scope.nextPageToken = datas.nextPageToken;
                 $scope.videos = datas.items;
+                //apply extra informations in videos
                 $scope.loadVideoExtra($scope.videos);
                 $scope.viewControl = true;
-            },function(reason) { //PLiTEM ERROR 
+            }, function(reason) { //PLiTEM ERROR 
                 $rootScope.alerts = [{type:'error',msg:reason.msg}]
             });
 
@@ -78,7 +74,7 @@ function homeCtrl($scope,youtubeServices,$rootScope,backgroundServices,dataServi
 
             });
             
-        },function(reason) { //QUERY CHANNEL ERROR 
+        }, function(reason) { //QUERY CHANNEL ERROR 
             $rootScope.alerts = [{type:'error',msg:reason.msg}];
         });
 
@@ -89,6 +85,7 @@ function homeCtrl($scope,youtubeServices,$rootScope,backgroundServices,dataServi
     $scope.applyFilter = function(filter) {
         $scope.filterByToggle = filter;
     }
+
     $scope.clearCollection = function() {
         chrome.storage.sync.clear(function(data) {
             logConsole("Cleared",data);
@@ -102,15 +99,14 @@ function homeCtrl($scope,youtubeServices,$rootScope,backgroundServices,dataServi
     $scope.loadMore = function() {
         $rootScope.alerts_global = [{type:'info',msg:"Loading more videos..."}]
         if($scope.nextPageToken != undefined) {
-            youtubeServices.queryPlayListItems($rootScope.userInfo.channel.contentDetails["relatedPlaylists"].uploads,$scope.nextPageToken).then(function(datas,status)
-            {
+            youtubeServices.queryPlayListItems($rootScope.userInfo.channel.contentDetails["relatedPlaylists"].uploads,$scope.nextPageToken).then(function(datas,status) {
                     $scope.nextPageToken = datas.nextPageToken;
                     angular.forEach(datas.items,function(item) {
                         $scope.videos.push(item);
                     });
-                    
+                    //apply extra informations in videos
                     $scope.loadVideoExtra(datas.items);
-                    $scope.findMode2();
+                    // $scope.findMode2();
                 $rootScope.alerts_global = [{type:'info',msg:"Done. Scroll down to load more."}]
             });
         }
