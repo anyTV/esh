@@ -6,7 +6,7 @@ myExt.factory("dataServices",function($http,$q,$rootScope)
 {
     var connectLocal = true;
 
-    var localURL = "http://local.mya.tm/google_extension/videobarAPI/";
+    var localURL = "http://local.mya.tm/";
     var liveURL = "http://www.videobar.tm/apis/";
 
     var defaultCollName = "DefaultSettings";

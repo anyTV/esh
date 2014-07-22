@@ -1,162 +1,145 @@
-// var oauth = chrome.extension.getBackgroundPage().oauth; // this is for the official chrome extension oauth
+var google = new GoogleResource();
 
-google = new GoogleResource();
 function byId(id) {
     return document.getElementById(id);
 }
 
-function homeCtrl($scope,youtubeServices,$rootScope,backgroundServices,dataServices) {
+function homeCtrl($scope, youtubeServices, $rootScope, backgroundServices, dataServices) {
     $rootScope.dbLog = "Database log";
     // $rootScope.multiSelect= true;
     
+    $rootScope.alerts_global = [{ type: 'info', msg: 'Welcome to Videobar on YouTube' }];
+    $rootScope.userInfo = "";
+    $rootScope.completedData = {finished:[], unfinished:[]};
     $scope.$watch("multi_select",function() {
         $rootScope.multiSelect = $scope.multi_select;
     });
-    $scope.filters = [{name:'Saved', filter:{mode:'save'}},
-    {name:'Published', filter:{mode:'publish'}},
-    {name:'Deleted', filter:{mode:'delete'}},
-    {name:'No template',filter:{mode:'none'}},
-    {name:'All',filter:{mode:''}}];
-              
-    $rootScope.hasAccessToken = google.hasAccessToken();
-    loadXML(backgroundServices,$rootScope);
-    dataServices.loadTemplates();
-    chrome.tabs.getSelected(null, function(tab) {
-        $scope.pageTitle = tab.title.replace(/- YouTube/g,"");
-        $scope.pageTitleShort = tab.title.replace(/- YouTube/g,"").substring(0,20) + "...";
-        
-        var annotationVId = getParameterByName("v",tab.url);
-        if(annotationVId != "") {
-            youtubeServices.queryVideoList(annotationVId).then(function(result) {
-                logConsole("Query source video duration",result.items[0]);
-                $rootScope.sourceVideoInfo = result.items[0];
-                $rootScope.sourceVideoInfo.url = tab.url;
-                $rootScope.sourceVideoInfo.contentDetails.duration = fixDuration($rootScope.sourceVideoInfo.contentDetails.duration);
-            });
-        }
-    });
-    
-    youtubeServices.getUserInfo().then(function(data, status) {
-        $rootScope.userInfo = data;
-        dataServices.insertUser({"email":$rootScope.userInfo.email,"appToken":google.getAccessToken(),"appId":chrome.runtime.id}).then(function(insertResult) {
-            //check video annotations in database
-            dataServices.checkVideos($rootScope.userInfo.email).then(function(dbVideos, status) {
-                $scope.dbVideos = dbVideos;
-                //apply the mode from checked videos
-                $scope.findMode2();
-            }, function(reason) {
-                $rootScope.error_checkVideo = true;
-                $scope.findMode2();
-            });
-        });
-
-        document.getElementById('resultVideos-container').style.display= "block";
-        youtubeServices.queryChannels().then(function(datas,status) {
-            $rootScope.userInfo.channel = datas.items[0];
-            
-            youtubeServices.queryPlayListItems($rootScope.userInfo.channel.contentDetails["relatedPlaylists"].uploads).then(function(datas,status) {
-                $scope.nextPageToken = datas.nextPageToken;
-                $scope.videos = datas.items;
-                //apply extra informations in videos
-                $scope.loadVideoExtra($scope.videos);
-                $scope.viewControl = true;
-            }, function(reason) { //PLiTEM ERROR 
-                $rootScope.alerts = [{type:'error',msg:reason.msg}]
-            });
-
-            youtubeServices.getChannelInfo($rootScope.userInfo.channel.id).then(function(channels,status) {
-                $rootScope.userInfo.channel.username = channels.entry.yt$username.$t;
-
-                youtubeServices.getGPlusInfo().then(function(data,status) {
-                    $rootScope.userInfo.displayName = data.displayName;
-                    dataServices.insertUser({"email":$rootScope.userInfo.email,"name":$rootScope.userInfo.displayName,"channel_username":$rootScope.userInfo.channel.username}).then(function(insertResult) {});
-                });
-
-            });
-            
-        }, function(reason) { //QUERY CHANNEL ERROR 
-            $rootScope.alerts = [{type:'error',msg:reason.msg}];
-        });
-
-    });
-
-    // dataServices.createDefaultCollections();
+    $scope.filters = [{name:'Saved', mode:'save'},
+                    {name:'Published', mode:'publish'},
+                    {name:'Deleted', mode:'delete'},
+                    {name:'No template',mode:'none'},
+                    {name:'All',mode:''}];
 
     $scope.applyFilter = function(filter) {
-        $scope.filterByToggle = filter;
-    }
-
-    $scope.clearCollection = function() {
-        chrome.storage.sync.clear(function(data) {
-            logConsole("Cleared",data);
-        });
+        $scope.filter = filter;
     }
     
     $rootScope.search = [];
+    $scope.videos = [];
+    dataServices.loadTemplates();
+
+    $scope.initialize = function() {
+        loadSourceAnnotations(backgroundServices,$rootScope);
+        chrome.tabs.getSelected(null, function(tab) {
+            $scope.pageTitle = tab.title.replace(/- YouTube/g,"");
+            $scope.pageTitleShort = tab.title.replace(/- YouTube/g,"").substring(0, 20) + "...";
+            
+            var video_src = getParameterByName("v",tab.url);
+            if(video_src != "") {
+                youtubeServices.queryVideoList(video_src).then(function(result) {
+                    logConsole("Query source video duration", result.items[0]);
+                    $rootScope.sourceVideoInfo = result.items[0];
+                    $rootScope.sourceVideoInfo.url = tab.url;
+                    $rootScope.sourceVideoInfo.contentDetails.duration = formatDuration($rootScope.sourceVideoInfo.contentDetails.duration);
+                });
+            }
+        });
+        
+        youtubeServices.getUserInfo().then(function(data, status) {
+            $rootScope.userInfo = data;
+            dataServices.insertUser({
+                                    "email":$rootScope.userInfo.email
+                                    , "appToken":google.getAccessToken()
+                                    , "appId":chrome.runtime.id
+                                    })
+            .then(function(insertResult) {
+                //check video annotations in database
+                dataServices.checkVideos($rootScope.userInfo.email)
+                .then(function(saved_videos, status) {
+                    $scope.saved_videos = saved_videos;
+                    //apply the mode from checked videos
+                    $scope.findMode();
+                }, function(reason) {
+                    $rootScope.error_checkVideo = true;
+                    $scope.findMode();
+                });
+            });
+
+            byId('resultVideos-container').style.display= "block";
+            youtubeServices.queryChannels().then(function(channel, status) {
+                $rootScope.userInfo.channel = channel.items[0];
+                
+                $scope.load_videos();
+                $rootScope.alerts_global = [{type:'info',msg:"Done loading all videos. Scroll down to load more."}];
+
+                var queryChannelInterval = setInterval(function() { $scope.$apply($rootScope.alerts_global = []);clearInterval(queryChannelInterval)},1000);
+
+                // window.setInterval(function() {
+                //     $scope.$apply($rootScope.alerts_global = []);
+                // },1000);
+
+                youtubeServices.getChannelInfo($rootScope.userInfo.channel.id).then(function(channel, status) {
+                    $rootScope.userInfo.channel.username = channel.entry.yt$username.$t;
+
+                    youtubeServices.getGPlusInfo().then(function(gplus, status) {
+                        $rootScope.userInfo.displayName = gplus.displayName;
+                        dataServices.insertUser({"email":$rootScope.userInfo.email,"name":$rootScope.userInfo.displayName,"channel_username":$rootScope.userInfo.channel.username}).then(function(insertResult) {});
+                    });
+
+                });
+                
+            }, function(reason) { //QUERY CHANNEL ERROR 
+                $rootScope.alerts_global = [{type:'error',msg:reason.msg}];
+            });
+
+        });
+    }
     
     /*********************************************************************************/
     
-    $scope.loadMore = function() {
-        $rootScope.alerts_global = [{type:'info',msg:"Loading more videos..."}]
-        if($scope.nextPageToken != undefined) {
-            youtubeServices.queryPlayListItems($rootScope.userInfo.channel.contentDetails["relatedPlaylists"].uploads,$scope.nextPageToken).then(function(datas,status) {
-                    $scope.nextPageToken = datas.nextPageToken;
-                    angular.forEach(datas.items,function(item) {
-                        $scope.videos.push(item);
-                    });
-                    //apply extra informations in videos
-                    $scope.loadVideoExtra(datas.items);
-                    // $scope.findMode2();
-                $rootScope.alerts_global = [{type:'info',msg:"Done. Scroll down to load more."}]
+    $scope.load_videos = function() {
+        if($scope.nextPageToken) 
+            $rootScope.alerts_global = [{type:'info',msg:"Loading more videos..."}];
+
+        youtubeServices.queryPlayListItems($rootScope.userInfo.channel.contentDetails["relatedPlaylists"].uploads,
+            ($scope.nextPageToken)?$scope.nextPageToken:'')
+        .then(function(videos, status) {
+            $scope.nextPageToken = videos.nextPageToken;
+            angular.forEach(videos.items,function(item) {
+                $scope.videos.push(item);
             });
-        }
-        else
-            $rootScope.alerts_global = [{type:'info',msg:"Done loading all your videos"}]
+            //apply extra informations in videos
+            $scope.loadVideoExtra(videos.items);
+            $scope.viewControl = true;
+        }, function(reason) { //PLiTEM ERROR 
+            $rootScope.alerts_global = [{type : 'error', msg: reason.msg}];
+        });
     }
 
-    $scope.loadVideoExtra = function(videoItems)
-    {
+    $scope.loadVideoExtra = function(videoItems) {
         var i =0,ids=[];
-        angular.forEach(videoItems,function(video)
-        {
-            if($rootScope.sourceVideoInfo != undefined)
-            {
+        angular.forEach(videoItems,function(video) {
+            if($rootScope.sourceVideoInfo != undefined) {
                 if(video.contentDetails.videoId == $rootScope.sourceVideoInfo.id)
                 $scope.videos.splice(i,1);
             }
             i++;
              ids.push(video.snippet.resourceId.videoId);
-             // video.mode = $scope.findMode(video.contentDetails.videoId);
         });
         $scope.getDuration(ids);
-        $scope.findMode2();
-    }
-    
-    $scope.findMode = function(vId)
-    {
-        var mode = "";
-        var cont = true;
-        var filteredVid = $scope.dbVideos.filter(function(val){return val.video_id === vId});
-        (filteredVid.length ===0)?(mode='none'):(mode=filteredVid[0].mode);
-        return mode;
+        $scope.findMode();
     }
 
-    $scope.findMode2 = function()
-    {
-        if($rootScope.error_checkVideo)
-        {
-            angular.forEach($scope.videos,function(video)
-            {
+    $scope.findMode = function() {
+        if($rootScope.error_checkVideo) {
+            angular.forEach($scope.videos,function(video) {
                 video.mode = "error";
             });
         }
-        else
-        {
-            angular.forEach($scope.videos,function(video)
-            {
-                if($scope.dbVideos)
-                {
-                    var filteredVid = $scope.dbVideos.filter(function(val){return val.video_id === video.contentDetails.videoId});
+        else {
+            angular.forEach($scope.videos,function(video) {
+                if($scope.saved_videos) {
+                    var filteredVid = $scope.saved_videos.filter(function(val){return val.video_id === video.contentDetails.videoId});
                     (filteredVid.length ===0)?(video.mode='none'):(video.mode=filteredVid[0].mode);
                 }
                 else
@@ -165,17 +148,14 @@ function homeCtrl($scope,youtubeServices,$rootScope,backgroundServices,dataServi
         }
     }
 
-    $scope.getDuration = function(ids)
-    {
+    $scope.getDuration = function(ids) {
         youtubeServices.queryVideoList(ids).then(function(result) {
             angular.forEach($scope.videos,function(video) {
                 var cont = true;
                 angular.forEach(result.items,function(item) {
-                    if(cont == true)
-                    {
-                        if(video.contentDetails.videoId == item.id)
-                        {
-                            video["duration"] = fixDuration(item.contentDetails.duration);
+                    if(cont == true) {
+                        if(video.contentDetails.videoId == item.id) {
+                            video["duration"] = formatDuration(item.contentDetails.duration);
                             cont = false;
                         }
                     }
@@ -183,74 +163,61 @@ function homeCtrl($scope,youtubeServices,$rootScope,backgroundServices,dataServi
                 
                 video.snippet.publishedAt = video.snippet.publishedAt.replace(/T/g," ");
                 var datePublished = new Date(video.snippet.publishedAt);
-                
                 video["date"] = datePublished;
             });
         });
     }
     
-    $scope.toggleVideo = function(id) //selection toggler 
-    {
+    $rootScope.selected = [];
+    $rootScope.selected.thereIs = true;
+    $scope.toggleVideo = function(id) { //selection toggler
         $scope.templates.isCollapsed = true;
-        angular.forEach($scope.templates,function(template)
-        {
+        angular.forEach($scope.templates,function(template) {
             template.buttons = [];
         });
         
         $rootScope.alerts_global = [];
-        // var cont = true;
-        angular.forEach($scope.videos, function(video){  
-            // if(cont == true)
-            // {
-                if(video["snippet"]["resourceId"]["videoId"] == id)
-                {
-                    (video["toggle"]== undefined)?(video["toggle"]=1):(video["toggle"]=undefined);
-                    // cont = false;
-                }
-                else
-                {
-                    if($rootScope.multiSelect == false)
-                        video["toggle"] = undefined; //comment if multi-select
-                }
-                    
-            // }
-        });
-        
-    }
-    $rootScope.selected = [];
-    $rootScope.selected.thereIs = true;
-    $scope.toggleCheckbox = function()
-    {
-        $rootScope.selected = [];
-        angular.forEach($scope.videos, function(video){  
-            if(video["toggle"] == 1)
-            {
+        $rootScope.selected = []; //refresh selected
+        angular.forEach($scope.videos, function(video) {
+            if(video["snippet"]["resourceId"]["videoId"] == id) {
+                (video["toggle"] == undefined)?(video["toggle"]=1):(video["toggle"]=undefined);
+            }
+            else {
+                if($rootScope.multiSelect == false)
+                    video["toggle"] = undefined; //comment if multi-select
+            }
+            if(video["toggle"] == 1) {
                 var item = {"id":video["snippet"]["resourceId"]["videoId"],"name":video["snippet"]["title"],"duration":video["duration"]};
                 $rootScope.selected.push(item);
             }
         });
-                
-        if($rootScope.selected.length ==0)
-        {
+
+        if($rootScope.selected.length ==0) {
             $scope.vidLabel = "";
             $rootScope.selected.thereIs = true;
         }
-        else
-        {
+        else {
             ($rootScope.selected.length == 1)?($scope.vidLabel = "to "+$scope.selected[0].name):($scope.vidLabel = "to "+$scope.selected.length +" Videos");
             $rootScope.selected.thereIs = false;
         }
-             
     }
     
-    $scope.logToDb= function(mode,data)
-    {
+    $scope.logToDb= function(mode,data) {
+        if(data.status === 403) {
+            alert("Cannot get permission to edit annotations. Please login or switch account to " 
+                        + $rootScope.userInfo.displayName 
+                        + " on YouTube.")
+            var link = "https://www.youtube.com/";
+            chrome.tabs.getSelected(null, function(tab) {
+              chrome.tabs.create({ url : link, index : tab.index+1, openerTabId : tab.id },
+              function(tab) {
+              });   
+            });
+        }
         var optTemplate = arguments[2];
-        var i =0,params=[];
-        angular.forEach($rootScope.selected,function(video)
-        {
-            if(optTemplate)
-            {
+        var i =0, params=[];
+        angular.forEach($rootScope.selected,function(video) {
+            if(optTemplate) {
                 params[i] = {"video_id":video.id,
                             "user_email":$rootScope.userInfo.email,
                             "title":video.name,
@@ -259,16 +226,14 @@ function homeCtrl($scope,youtubeServices,$rootScope,backgroundServices,dataServi
                             "xml_string":video.xml,
                             "mode":mode};
             }
-            else if(mode == "deleteall")
-            {
+            else if(mode == "deleteall") {
                 params[i] = {"video_id":video.id,
                             "user_email":$rootScope.userInfo.email,
                             "title":video.name,
                             "xml_string":video.xml,
                             "mode":"delete"};
             }
-            else
-            {
+            else {
                 params[i] = {"video_id":video.id,
                             "user_email":$rootScope.userInfo.email,
                             "title":video.name,
@@ -283,111 +248,111 @@ function homeCtrl($scope,youtubeServices,$rootScope,backgroundServices,dataServi
             optTemplate=true;
 
         $rootScope.alerts = [{type:'info',msg:'Adding records to Database...'}];
-        dataServices.insertLog2(params,optTemplate).then(function(res)
-        {
-            console.log(res);
-            var alertInterval = setInterval(function(){ $scope.$apply($rootScope.alerts = []);clearInterval(alertInterval)},800);
+        dataServices.insertLog2(params,optTemplate).then(function(res) {
+            var alertInterval = setInterval(function() { $scope.$apply($rootScope.alerts = []);clearInterval(alertInterval)},800);
             $scope.report(mode,data);
-        },function(reason)
-        {
+        },function(reason) {
             $rootScope.alerts = [{type:'error',msg:reason.msg}];
         });
 
-        if(optTemplate)
-        {
-            angular.forEach($rootScope.selected,function(video)
-            {
-                
+        if(optTemplate) {
+            angular.forEach($rootScope.selected,function(video) {
                 var filteredValue = $scope.videos.filter(function(val){return val.contentDetails.videoId === video.id});
                 filteredValue[0].mode = mode;
-
             });
         }
     }
-    
-    $scope.saveAnnotations = function(mode)
-    {
-        // console.log(arguments[1]);
-        if($rootScope.selected.length != 0)
-        {
-            $rootScope.completedData = {finished:new Array(),unfinished:new Array()};
-            if($rootScope.hasAnnotations || arguments[1]!= undefined || mode=="deleteall")
-            {
-                $rootScope.alerts = [{type:'info',msg:'Processing...'}];
-                var template = arguments[1];
-                if(arguments[1] != undefined && mode == "save")
-                {
-                    youtubeServices.sendAnnotation("delete",template).then(function(deleteResult) {
-                        youtubeServices.sendAnnotation(mode,template,true).then(function(saveResult) {
-                            $scope.logToDb(mode,saveResult,template);
-                        });
-                    });
+
+    $scope.copyAnnotations = function(mode) {
+        $rootScope.completedData = {finished:[], unfinished:[]};
+        if($rootScope.selected.length != 0) {
+            if($rootScope.hasAnnotations) {
+                $rootScope.alerts = [{type : 'info', msg : 'Processing...'}];
+
+                var publishMode = false;
+                if(mode === "publish") {
+                    publishMode = true;
+                    mode = "save";
                 }
-                else if(arguments[1] != undefined && mode == "publish")
-                {
-                    youtubeServices.sendAnnotation("delete",template).then(function(deleteResult) {
-                        youtubeServices.sendAnnotation("save",template,true).then(function(saveResult) {
-                            youtubeServices.sendAnnotation("publish",template,true).then(function(publishResult) {
-                                $scope.logToDb(mode,publishResult,template);    
-                            });
+                youtubeServices.sendAnnotation(mode).then(function(data) {
+                    $rootScope.completedData = data;
+                    if(publishMode === true) {
+                        youtubeServices.sendAnnotation("publish",template,true).then(function(publishResult) {
+                            $scope.logToDb("publish",publishResult,template);  
                         });
+                    }
+                    else $scope.logToDb(mode,data,template);
+                }, function(reason) {
+                    $rootScope.alerts = [{type:'error',msg:reason.msg}];
+                });
+            } else $rootScope.alerts_global = [{type:'error',msg:'Current video has no annotations.'}];
+        }
+    }
+
+    $scope.deleteAnnotations = function(mode) {
+        $rootScope.completedData = {finished:[], unfinished:[]};
+        if($rootScope.selected.length != 0) {
+            $rootScope.alerts = [{type:'info',msg:'Processing...'}];
+            if(mode == "delete") {
+                var template = arguments[1];
+                if(confirm("Are you sure you want to clear?")) {
+                    youtubeServices.sendAnnotation(mode, template).then(function(data) {
+                        $rootScope.completedData = data;
+                        youtubeServices.sendAnnotation("publish", null, true).then(function(publishResult) {
+                            $scope.logToDb(mode, data, template);
+                        });
+                    }, function(reason) {
+                        $rootScope.alerts = [{type:'error',msg:reason.msg}];
                     });
                 }
                 else
-                {
-                    if(mode == "delete")
-                    {
-                        if(confirm("Are you sure you want to clear?"))
-                        {
-                            youtubeServices.sendAnnotation(mode,template).then(function(data) {
-                                youtubeServices.sendAnnotation("publish",template,true).then(function(publishResult) {
-                                    $scope.logToDb(mode,data,template);
-                                });
-                            });
-                        }
-                        else
-                            $rootScope.alerts = [];
-                    }
-                    else if(mode == "deleteall")
-                    {
-                        if(confirm("Are you sure you want to clear all published annotations?"))
-                        {
-                            youtubeServices.sendAnnotation(mode).then(function(data) {
-                                youtubeServices.sendAnnotation("publish",template,true).then(function(publishResult) {
-                                    $scope.logToDb(mode,data);
-                                });
-                            });
-                        }
-                        else
-                            $rootScope.alerts = [];
-                    }
-                    else
-                    {
-                        var publishMode = false;                                        
-                        if(mode == "publish")
-                        {
-                            publishMode = true;
-                            mode = "save";
-                        }       
-                        youtubeServices.sendAnnotation(mode,arguments[1]).then(function(data) {
-                            // dataServices.insertLog($rootScope.userInfo.id,{"date":new Date().toUTCString(),"processed":data});
-                            if(publishMode == true)
-                            {
-                                youtubeServices.sendAnnotation("publish",template,true).then(function(publishResult) {
-                                    $scope.logToDb("publish",publishResult,template);  
-                                })
-                            }
-                            else
-                                $scope.logToDb(mode,data,template); 
-                        },function(reason) {
-                            $rootScope.alerts = [{type:'error',msg:reason.msg}];
-                        });
-                    }
-                    
-                }
+                    $rootScope.alerts = [];
             }
-            else
-                $rootScope.alerts_global = [{type:'error',msg:'Current video has no annotations.'}];
+            else if(mode == "deleteall") {
+                if(confirm("Are you sure you want to clear all published annotations?")) {
+                    youtubeServices.sendAnnotation(mode).then(function(data) {
+                        $rootScope.completedData = data;
+                        youtubeServices.sendAnnotation("publish", null, true).then(function(publishResult) {
+                            $scope.logToDb(mode,data);
+                        });
+                    }, function(reason) {
+                        $rootScope.alerts = [{type:'error',msg:reason.msg}];
+                    });
+                }
+                else
+                    $rootScope.alerts = [];
+            }
+        }
+        else $rootScope.alerts_global = [{type:'error',msg:'Select a video first'}];
+    }
+    
+    $scope.saveAnnotations = function(mode) {
+        $rootScope.completedData = {finished:[], unfinished:[]};
+        if($rootScope.selected.length != 0) {
+            $rootScope.alerts = [{type:'info',msg:'Processing...'}];
+            var template = arguments[1];
+            if(template != undefined) {
+
+                var publishMode = false;
+                if(mode === "publish") {
+                    publishMode = true;
+                    mode = "save";
+                }
+                youtubeServices.sendAnnotation("delete",template).then(function(deleteResult) {
+                    youtubeServices.sendAnnotation(mode, template, true).then(function(saveResult) {
+                        $rootScope.completedData = saveResult;
+                        if(publishMode === true) {
+                            youtubeServices.sendAnnotation("publish", null, true).then(function(publishResult) {
+                                $scope.logToDb("publish", publishResult, template);    
+                            });
+                        }
+                        else $scope.logToDb(mode, saveResult, template);
+                    });
+                }, function(reason) {
+                    $rootScope.alerts = [{type:'error',msg:reason.msg}];
+                });
+            }
+            else $rootScope.alerts_global = [{type:'error',msg:'No template selected'}];
         }
         else
             $rootScope.alerts_global = [{type:'error',msg:'Select a video first'}];
@@ -396,42 +361,36 @@ function homeCtrl($scope,youtubeServices,$rootScope,backgroundServices,dataServi
     
     $scope.report = function(mode,data)
     {
-        switch(mode)
-        {
+        switch(mode) {
             case "delete":$rootScope.alerts = [{type:'info',msg:'Clear Process Completed'}];break;
             case "deleteall":$rootScope.alerts = [{type:'info',msg:'Clear all annotations completed'}];break;
             case "publish":$rootScope.alerts = [{type:'info',msg:'Publish Process Completed'}];break;
             case "save":$rootScope.alerts = [{type:'info',msg:'Save Process Completed.'}];break;
         }
         
-        if($rootScope.multiSelect == false)
-        {
-            if(data.finished.length == 1)
-            {
-                switch(mode)
-                {
+        if($rootScope.multiSelect == false) {
+            if(data.finished.length == 1) {
+                switch(mode) {
                     case "delete":$rootScope.alerts = [{type:'info',msg:'Successfully Cleared'}];break;
                     case "deleteall":$rootScope.alerts = [{type:'info',msg:'Successfully Cleared all annotations'}];break;
                     case "publish":$rootScope.alerts = [{type:'info',msg:'Successfully Published'}];break;
                     case "save":$rootScope.alerts = [{type:'info',msg:'Successfully Saved.'}];break;
                 }    
             }
-            else if(data.finished.length == 0)
-            {
-                switch(mode)
-                {
-                    case "delete":$rootScope.alerts = [{type:'error',msg:'Failed'}];break;
-                    case "deleteall":$rootScope.alerts = [{type:'info',msg:'Failed'}];break;
-                    case "publish":$rootScope.alerts = [{type:'error',msg:'Failed'}];break;
-                    case "save":$rootScope.alerts = [{type:'error',msg:'Failed.'}];break;
-                }       
-            }
+        }
+        if(data.finished.length == 0) {
+            switch(mode) {
+                case "delete":$rootScope.alerts = [{type:'error',msg:'Failed'}];break;
+                case "deleteall":$rootScope.alerts = [{type:'info',msg:'Failed'}];break;
+                case "publish":$rootScope.alerts = [{type:'error',msg:'Failed'}];break;
+                case "save":$rootScope.alerts = [{type:'error',msg:'Failed.'}];break;
+            }       
         }
     }
     
     $scope.openAnnotEditor = function() {
-        if($rootScope.alerts.length !=0) {
-                alert("Please wait until the operation is finished");
+        if($rootScope.alerts && $rootScope.alerts.length != 0) {
+            alert("Please wait until the operation is finished");
         }
         else
         {
@@ -444,7 +403,7 @@ function homeCtrl($scope,youtubeServices,$rootScope,backgroundServices,dataServi
         }
     }
     $scope.openYoutubeVideo = function() {
-        if($rootScope.alerts.length!=0)
+        if($rootScope.alerts && $rootScope.alerts.length != 0)
             alert("Please wait until the operation is finished");
         else
         {
@@ -456,62 +415,54 @@ function homeCtrl($scope,youtubeServices,$rootScope,backgroundServices,dataServi
                 });
         }
     }
+
     $scope.closeAlert = function(index) {
         $scope.alerts.splice(index,1);
     }
-    
-}
 
-function headCtrl($scope,$rootScope,mongoServices)
-{
-    $rootScope.completedData = {finished:new Array(),unfinished:new Array()};
-    $rootScope.alerts_global = [{ type: 'info', msg: 'Welcome to Videobar on YouTube' }];
-    $rootScope.userInfo = "";
-    $scope.bindthis = function()
-    {
-        $rootScope.hasAccessToken = google.hasAccessToken();
-        if(google.hasAccessToken())
-        {
-            google.authorize(function(){});
-            $scope.sessionBind = "Sign out";
+    $scope.auth = function() {
+        $scope.userInfo.email = "";
+        $scope.userInfo.displayName = "";
+        $scope.auth_text = "Sign in with YouTube";
+
+        if(google.hasAccessToken()) {
+            $rootScope.alerts_global = [{type:'info',msg:'Logging out...'}];
+            google.clearAccessToken(function(err, token) {
+                if(err) {
+                    $scope.$apply($rootScope.alerts_global = [{type:'error', msg:err.message}]);
+                }
+                console.log(token);
+                $scope.$apply($rootScope.alerts_global = [{type:'info',msg:'Successfully logged out'}]);
+                $scope.$apply($rootScope.hasAccessToken = false);
+                $scope.auth_text = "Sign in with YouTube";
+                return;
+            });
         }
-        else
-        {
-            $scope.userInfo.email = "";
-            $scope.userInfo.displayName="";
-            $scope.sessionBind = "Sign in with YouTube";
+        else {
+            $rootScope.alerts_global = [{type:'info',msg:'Singing in...'}];
+            google.authorize(function(err, token) {
+                if(err) {
+                    $scope.$apply($rootScope.alerts_global = [{type:'error', msg:err.message}]);
+                }
+                else {
+                    $scope.auth_text = 'Sign out';
+                    $scope.$apply($rootScope.alerts_global = [{type:'info',msg:'Successfully signed in'}]);
+                    $rootScope.hasAccessToken = true;
+                    $scope.initialize();
+                }
+            });
         }
     }
-    
-    $scope.bindthis();
 
-    $scope.auth = function()
-    {
-        // oauth.authorize(function()
-        // {
-        //     console.log(oauth.getAuthorizationHeader());
-        // });
-
-        if(google.hasAccessToken())
-        {
-            google.clearAccessToken();
-            $rootScope.alerts_global = [{type:'info',msg:'Successfully logged out'}];
-            $scope.bindthis();
-        }
-        else
-        {
-            google.authorize();
-            $scope.bindthis();
-        }
-    }
-    
+    $scope.auth();
+        
     $rootScope.openExternalLinks = function(link)
     {
-          chrome.tabs.getSelected(null, function(tab) {
-              chrome.tabs.create({url:link,index:tab.index+1,openerTabId:tab.id},
-              function(tab) {
-              });   
-            });
+        chrome.tabs.getSelected(null, function(tab) {
+          chrome.tabs.create({url:link,index:tab.index+1,openerTabId:tab.id},
+          function(tab) {
+          });   
+        });
     }
     
     $scope.searchItem = function() {
@@ -519,11 +470,12 @@ function headCtrl($scope,$rootScope,mongoServices)
     }
 }
 
-function loadXML(backgroundServices,$rootScope)
+
+function loadSourceAnnotations(backgroundServices,$rootScope)
 {
     backgroundServices.hasAnnotation().then(function(data) {
         $rootScope.hasAnnotations = data;
-        (!data)?($rootScope.alerts_global = [{type:'error',msg:'Video has no annotations.'}]):($rootScope.alerts = [{type:'info',msg:'Annotations found on this video'}]);
+        (!data)?($rootScope.alerts_global = [{type:'error',msg:'Video has no annotations.'}]):($rootScope.alerts_global = [{type:'info',msg:'Annotations found on this video'}]);
         
     },function(reason) {
         // $rootScope.alerts.push({type:'error',msg:reason.msg});
@@ -581,7 +533,7 @@ function stringContains(s, match) {
     return s.indexOf(match)!==-1;
 }
 
-function fixDuration(s) {
+function formatDuration(s) {
     var duration = s.replace(/PT/g,"");
     duration = duration.replace(/M|H/g,":");
 

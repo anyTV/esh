@@ -25,27 +25,25 @@
 		"page": "background.html",
 		"presistent":"false"
   	},
-  
-  
-  "content_scripts": [
-    {
-      "matches": ["http://www.google.com/robots.txt*"],
-      "js": ["oauth2/oauth2_inject.js"],
-      "run_at": "document_start"
-    }
-  ],
-  
   "permissions": [
+    "identity",
   	"tabs",
   	"storage",
   	"http://www.youtube.com/*",
   	"https://www.youtube.com/*",
   	"https://gdata.youtube.com/*",
-    "https://accounts.google.com/o/oauth2/token",
     "https://www.googleapis.com/auth/youtubepartner",
     "https://www.googleapis.com/auth/youtube",
     "https://www.googleapis.com/auth/plus.me",
     "http://www.videobar.tm/*",
     "http://local.mya.tm/*"
-  	]
+  	],
+    "oauth2" : {
+      "client_id" : "519680141770-sjdq095kb0qhtsi4le1o0odlbedtc8m4.apps.googleusercontent.com",
+      "scopes" : [
+        "https://www.googleapis.com/auth/youtubepartner",
+        "https://www.googleapis.com/auth/youtube",
+        "https://www.googleapis.com/auth/userinfo.email"
+      ]
+    }
 }

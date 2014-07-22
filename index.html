@@ -25,7 +25,6 @@
         <link rel="stylesheet" href="css/container.css">
         <link rel="stylesheet" href="bootstrap/css/bootstrap.css">
         <link rel="stylesheet" href="css/custom.css">
-        <script src="oauth2/oauth2.js"></script>
         <script src="youtubeapi/youtube.js"></script>
         <script src="js/angular.min.js"></script>
         <script src="js/app.js"></script>
@@ -34,7 +33,6 @@
         <script src="js/YoutubeServices.js"></script>
         <script src="js/BackgroundServices.js"></script>
         <script src="js/DataServices.js"></script>
-        <script src="js/MongoServices.js"></script>
         
         <!--script src="bootstrap/js/ui-bootstrap.min.js"></script-->
         <script src="bootstrap/js/ui-bootstrap-tpls-0.6.0.min.js"></script>
@@ -50,8 +48,10 @@
     </head>
     
     <body ng-app = "copyYAnnotations" ng-csp = "">
-        <header class="navbar" ng-controller="headCtrl">
+        <div ng-controller="homeCtrl">
+        <header class="navbar">
     		<nav class="navbar-inner" style="height:32px;" >
+                <div class = "pull-left">
         			<a class="brand" href=""><img src ="images/19-g.png"/>&nbsp;Videobar on YouTube</a>
         			<!-- <button class="btn btn-primary btn-mini"  style="margin-left: -13px!important;margin-top:8px;">Videobars!</button> -->
         			<div style="margin-top:7px;" class="btn-group btn-mini" ng-show = "hasAccessToken" tooltip-placement="right" tooltip ="{{completedData.finished.length}} success" >
@@ -71,10 +71,10 @@
                              <li ng-repeat="item in completedData.unfinished"><a href ="#">{{item.name}}</a></li>
                          </ul>
                     </div>
-        			
+    			</div>
         			<div class="btn-group btn-mini pull-right" style="margin-right: -13px!important;margin-top:8px;">
         			    <!--button class="btn btn-small btn-danger">{{userInfo.email}}</button-->
-        			    <button class="btn btn-mini btn-danger" ng-show="!hasAccessToken" ng-click = "auth();">{{sessionBind}}</button>
+        			    <button class="btn btn-mini btn-danger" ng-show="!hasAccessToken" ng-click = "auth();">{{auth_text}}</button>
                         <a hre="#" class="btn btn-mini dropdown-toggle" data-toggle="dropdown">
                             {{userInfo.displayName}}&nbsp;<span class="caret"></span><!--span class="caret"></span-->
                         </a>
@@ -83,7 +83,7 @@
                              <li><a href="#" ng-click = "openExternalLinks('http://www.youtube.com/anytvnetwork');">any.TV Network</a></li>
                              <!-- <li><a href="settings.html" target="_blank">Settings</a></li> -->
                              <li><a href="#" ng-click = "openExternalLinks('options.html');">Create or edit Videobar!</a></li>
-                             <li id="sendAnnotation" ng-click = "auth();"><a href="#">{{sessionBind}}</a></li>
+                             <li id="sendAnnotation" ng-click = "auth();"><a href="#">{{auth_text}}</a></li>
                          </ul>
                     </div>
         			
@@ -91,11 +91,10 @@
             <center><alert style = "position:inherit;height:2px;line-height:0.5px" ng-repeat="alert in alerts_global" type="alert.type" style ="width:320px;"><div ng-bind-html = "alert.msg"></div></alert></center>
         </header>
         <section>
-            <article id ="resultVideos-container" ng-controller="homeCtrl" ng-show = "hasAccessToken" style="margin-top:-15px;" ng-init="multi_select=false">
+            <article id ="resultVideos-container" ng-show = "hasAccessToken" style="margin-top:-15px;" ng-init="multi_select=false">
                 &nbsp;<input type="search" ng-show="hasAccessToken" style="height:19px!important;margin-top:4.5px!important;width:320px;" class="input-mini" size = '320px' ng-model="search.snippet.title" placeholder="Search videos">
                 <div class="input-group-btn btn-group"><button class="btn btn-default" style="margin-top:-6px;"><span class="icon-search"></span></button></div>
                 <button class="btn btn-primary btn-small pull-right" style="margin-top:5px;" ng-click="openExternalLinks('options.html');">Create or edit Videobar!</button>
-                <!--button ng-click="clearCollection()">Clear</button-->
                 <accordion close-others="true" >
                     <!--accordion-group>
                          <accordion-heading>
@@ -138,15 +137,18 @@
                         </br>
                             </hr>
                             <center>
+                            <alert ng-repeat="alert in alerts" type="alert.type" style ="width:320px;" close = "closeAlert($index);"><div ng-bind-html = "alert.msg"></div></alert>
+                            </center>
+                            <center>
                             <b>Annotations:</b>&nbsp;
                                 <!-- <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "saveAnnotations('save');" class="btn btn-success btn-small">Save</button> -->
-                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "saveAnnotations('publish');" class="btn btn-success btn-small" tooltip-placement="top" tooltip="Save and publish copied annotations">Save</button>
+                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "copyAnnotations('publish');" class="btn btn-success btn-small" tooltip-placement="top" tooltip="Save and publish copied annotations">Save</button>
                                 <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "openAnnotEditor();" class="btn btn-primary btn-small" tooltip-placement="top" tooltip="Edit on youtube">Edit</button>
                                 <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "openYoutubeVideo();" class="btn btn-small" tooltip-placement="top" tooltip="Watch it on youtube">View</button>
                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                 
-                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "saveAnnotations('delete');" class="btn btn-danger btn-small" tooltip-placement="top" tooltip="Clear copied annotations">Clear</button>
-                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "saveAnnotations('deleteall');" class="btn btn-inverse btn-small" tooltip-placement="top" tooltip="Clear all published annotations">Clear all</button>
+                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "deleteAnnotations('delete');" class="btn btn-danger btn-small" tooltip-placement="top" tooltip="Clear copied annotations">Clear</button>
+                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "deleteAnnotations('deleteall');" class="btn btn-inverse btn-small" tooltip-placement="top" tooltip="Clear all published annotations">Clear all</button>
                             </center>
                     </accordion-group>
                 </accordion>
@@ -157,7 +159,7 @@
             <a href="http://www.any.tv">any.TV Limited</a> &copy; 2013 | Believe in You.
          </center></section><br/>
 	    </footer>
-    	
+    	</div>
     </body>
 </html>
 

@@ -5,7 +5,7 @@
 myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServices,dataServices)
 {
     var idPrefix= "annotation_"
-    var btnBase = '<annotation id="annotation_" type="highlight" log_data="xble=1">'+
+    var btnBase = '<annotation author="mcnfreedom" id="annotation_" type="highlight" log_data="xble=1">'+
                         '<segment>'+
                         '<movingRegion type="rect">'+
                         '<rectRegion x="0.00000" y="0.00000" w="11.05400" h="12.56300" t="0:00.000"/>'+
@@ -17,7 +17,7 @@ myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServi
                         '<url target="current" value="linkhere" link_class="1"/>'+
                         '</action>'+
                     '</annotation>';
-    var txtBase =   '<annotation id="annotation_" type="text" style="highlightText" logable="false">'+
+    var txtBase =   '<annotation author="mcnfreedom" id="annotation_" type="text" style="highlightText" logable="false">'+
                         '<TEXT>text here</TEXT>'+
                         '<segment spaceRelative="annotation_">'+
                         '<movingRegion type="rect">'+
@@ -640,11 +640,11 @@ myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServi
                 xmlString = xmlString.replace(/<annotation/g,"<deletedItem ");
                 xmlString = xmlString.replace(/<\/annotation>/g,"</deletedItem>");
                 xml = textToXML(xmlString);
-                angular.forEach(xml.getElementsByTagName("deletedItems")[0].childNodes,function(node)
-                {
-                    if(node.nodeName == "deletedItem")
-                    {
-                        node.setAttribute("author","");
+                angular.forEach(xml.getElementsByTagName("deletedItems")[0].childNodes, function(node) {
+                    if(node.nodeName === "deletedItem") {
+                        if(!node.attributes.author) {
+                            node.setAttribute("author","");
+                        }
                     }
                 });
             }
@@ -653,6 +653,13 @@ myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServi
                 xmlString = xmlString.replace(/<annotations/g,"<updatedItems");
                 xmlString = xmlString.replace(/<\/annotations>/g,"</updatedItems>");
                 xml = textToXML(xmlString);
+                angular.forEach(xml.getElementsByTagName("updatedItems")[0].childNodes, function(node) {
+                    if(node.nodeName === "annotation") {
+                        if(!node.attributes.author) {
+                            node.setAttribute("author","");
+                        }
+                    }
+                });
             }
             else //xml for publish
                 xml = textToXML(xmlString);
@@ -668,17 +675,14 @@ myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServi
             
             return xml;
         },
-        decodeXML:function(xml,sourceVideoDuration)
-        {
-            var annotationArray = [];
-            var annotationsSorted = {
-              "startRelative":new Array(),
-              "stopRelative":new Array(),
-              "stretchFromStart":new Array(),
-              "stretchFromEnd":new Array(),  
-              "fullDuration":new Array()
-            };
-            
+        getPercentageDifference: function(src, dest) {
+            logConsole("srcduration",src);
+            logConsole("destVideoDuration",dest);
+            var percentage = ((dest - src) / src) * 100;
+            logConsole("percentage", percentage);
+            return percentage;
+        },
+        fixTimeByPercentage:function(xml, percentage, duration) {
             var i =0;
             angular.forEach(xml.getElementsByTagName("updatedItems")[0].childNodes,function(node)
             {
@@ -687,79 +691,36 @@ myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServi
                     if(node.attributes.type.value == 'highlight' || (node.attributes.type.value == 'text'&& node.attributes.style.value != 'highlightText'))
                     {
                         regionNodes = gotoRegionNode(node);
-                        var annotationTime=getTime(regionNodes[0].attributes.t.value,regionNodes[1].attributes.t.value);
-                        // console.log(annotationTime);                    
+                        var annotationTime=getTime(regionNodes[0].attributes.t.value, regionNodes[1].attributes.t.value);
+                        logConsole("time", annotationTime);
+                        var half_percentage = percentage/2
+                            , start = annotationTime.start_time
+                            , stop = annotationTime.stop_time;
+
+                        start = start - (start * (half_percentage/100));
+                        stop = stop + (stop * (half_percentage/100));
                         
-                        annotationArray[i]= {"xml":node,"id":node.attributes.id.value,"time":annotationTime};
+                        if(start < 0) {
+                            start = 0;
+                            stop = stop + (stop * (percentage/100));
+                        }
+
+                        if(stop > duration.destination) {
+                            stop = duration.destination;
+                            start = start - (start * (percentage/100));
+                        }
+
+                        annotationTime.start_time = start;
+                        annotationTime.stop_time = stop;
+                        annotationTime.duration_time = stop - start;
+                        logConsole("updated time", annotationTime);
                         
-                        if(tolerate(3,sourceVideoDuration,annotationArray[i].time.stop_time) && tolerate(3,0,annotationArray[i].time.start_time))
-                        {
-                            // logConsole("Full Duration","");
-                            annotationsSorted.fullDuration.push(annotationArray[i]);
-                        }
-                        else if(tolerate(3,sourceVideoDuration,annotationArray[i].time.stop_time))
-                        {
-                            if(annotationArray[i].time.start_time >= sourceVideoDuration/2)
-                            {
-                                // logConsole("End point relative","");
-                                annotationsSorted.stopRelative.push(annotationArray[i]);
-                            }
-                            else
-                            {
-                                annotationsSorted.stretchFromEnd.push(annotationArray[i]);
-                                // console.log(annotationArray[i]);
-                                // logConsole("Full Duration","");
-                            }
-                        }
-                        else if(tolerate(3,0,annotationArray[i].time.start_time))
-                        {
-                            if(annotationArray[i].time.stop_time <= sourceVideoDuration/2)
-                            {
-                                // logConsole("Start point relative","");
-                                annotationsSorted.startRelative.push(annotationArray[i]);
-                            }
-                            else
-                            {
-                                annotationsSorted.stretchFromStart.push(annotationArray[i]);
-                                // console.log(annotationArray[i]);
-                                // logConsole("Stretch","");
-                            }
-                        }
+                        durationChange2(node, {"duration" : annotationTime.duration_time, "start_time" : annotationTime.start_time, "stop_time" : annotationTime.stop_time } );
+                        
                         i++;   
                     }
                 }
             });
-            logConsole("Sorted annotations",annotationsSorted);
-            return annotationsSorted;
-        },
-        fixTime:function(annotationsSorted,duration)
-        {
-            var startTime="",stopTime="";
-            
-            angular.forEach(annotationsSorted.startRelative, function(annot) {
-                var new_stop_time = 0 + annot.time.duration_time;
-                annot.xml = durationChange2(annot.xml,{"duration":annot.time.duration,"start_time":0,"stop_time":new_stop_time});
-                if(stopTime=="" || new_stop_time > stopTime)
-                stopTime = new_stop_time;
-            });
-            
-            angular.forEach(annotationsSorted.stopRelative,function(annot) {
-                var new_start_time = duration.destination - annot.time.duration_time;
-                annot.xml = durationChange2(annot.xml,{"duration":annot.time.duration,"start_time":new_start_time,"stop_time":duration.destination});
-                if(startTime=="" || new_start_time > startTime)
-                startTime = new_start_time;
-            });
-            
-            angular.forEach(annotationsSorted.stretchFromStart,function(annot) {
-                annot.xml = durationChange2(annot.xml,{"duration":annot.time.duration,"start_time":0,"stop_time":startTime});
-            });
-            angular.forEach(annotationsSorted.stretchFromEnd,function(annot) {
-                annot.xml = durationChange2(annot.xml,{"duration":annot.time.duration,"start_time":stopTime,"stop_time":duration.destination});
-            });
-    
-            angular.forEach(annotationsSorted.fullDuration,function(annot) {
-                annot.xml=durationChange2(annot.xml,{"duration":duration.destination,"start_time":0,"stop_time":duration.destination}); 
-            });        
         },
         customizeTemplate:function(video)
         {

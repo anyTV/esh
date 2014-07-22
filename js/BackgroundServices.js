@@ -18,15 +18,17 @@ myExt.factory("backgroundServices",function($http,$q,$rootScope)
             url:xmlUrl,
             params:{features:1, legacy:1,video_id:vId},
             headers:{'Content-Type':'application/data','identifier':optionalId}
-                }).success(function(datas,status,headers,config)
+                }).success(function(data,status,headers,config)
                 {
-                    // console.log(datas);
+                    // remove InVideo Programming
+                    data = data.replace(/<annotation [^>]*?id="channel:[\S\s]*?<\/annotation>/g, '');
+                    // console.log(data);
                     if(optReturnXMLData==true)
-                        datas = textToXML(datas);
+                        data = textToXML(data);
                         
-                    (optionalId !=null)?(deferred.resolve({"xml":datas,"identifier":config.headers.identifier})):(deferred.resolve(datas));
+                    (optionalId !=null)?(deferred.resolve({"xml":data,"identifier":config.headers.identifier})):(deferred.resolve(data));
                     
-                }).error(function(datas,status,headers,config)
+                }).error(function(data,status,headers,config)
                 {
                     console.log("error!");
                     (optionalId!=null)?(deferred.reject({"msg":"Error fetching annotations. Please reload","status":status,"identifier":config.headers.identifier})):(deferred.reject({"msg":"Error fetching annotations. Please reload","status":status},config.headers.identifier));

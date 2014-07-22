@@ -1,48 +1,57 @@
-var google = "";
-var GoogleResource = function()
-{
-    this.google = "a";
-    this.provider = "";
-    __contruct = function(that)
-    {
-        console.log(that);
-        that.google = new OAuth2('google', {
-                    client_id: '544761083604-8327g2lmsbjd37hlodt548p5hb5r09ua.apps.googleusercontent.com',
-                    client_secret: 'gf-nrcXIUF3fuLR4blDqwfa3',
-                    api_scope: "https://www.googleapis.com/auth/youtubepartner+"+
-                                "https://www.googleapis.com/auth/youtube+"+
-                                "https://www.googleapis.com/auth/userinfo.email"
-                });
-        that.provider = that.google;
-    }(this)
+var GoogleResource = function() {
+    var provider, config, token;
+    __contruct = function(that) {
+        that.config = {"interactive" : true};
+        that.provider = chrome.identity;
+    }(this);
 }
 
-GoogleResource.prototype.hasAccessToken= function()
-{
-    return this.provider.hasAccessToken();
+GoogleResource.prototype.hasAccessToken= function() {
+    if(this.token)
+        return true;
+    return false;
 }
-GoogleResource.prototype.getAccessToken = function()
-{
-    return this.provider.getAccessToken();
+GoogleResource.prototype.getAccessToken = function() {
+    return this.token;
 }
-GoogleResource.prototype.clearAccessToken = function()
-{
-    return this.provider.clearAccessToken();
-}
-GoogleResource.prototype.authorize=function()
-{
-    this.provider.authorize(function(){
-        return "success";
+GoogleResource.prototype.clearAccessToken = function(callback) {
+    var that = this;
+    this.provider.getAuthToken(this.config, function(token) {
+        that.provider.removeCachedAuthToken({"token" : token}, function() {
+            if(chrome.runtime.lastError) {
+                callback(chrome.runtime.lastError);
+                return;
+            }
+            that.token = null;
+            callback(null);
+            return;
+        });
     });
 }
-GoogleResource.prototype.isAccessTokenExpired = function()
-{
+
+GoogleResource.prototype.authorize=function(callback) {
+    var that = this;
+    this.provider.getAuthToken(this.config, function(token) {
+        if(chrome.runtime.lastError) {
+            callback(chrome.runtime.lastError);
+            return;
+        }
+        if(!token) {
+            callback(null, null);
+            return;
+        }
+        that.token = token;
+        callback(null, token);
+        return;
+    });
+}
+GoogleResource.prototype.isAccessTokenExpired = function() {
     this.provider.isAccessTokenExpired();
 }
 
 
-var YoutubeResource = function(config){
-    this.key = "AIzaSyAhkr8hbq6J0_4HD8ANO4DQqPoHmQFiFDY"; //REPLACE THE KEY WITH YOUR KEY
+var YoutubeResource = function(config) {
+    this.key = "AIzaSyBFAShlZr9tBGQBjtyN_IY9-SbVVn-fMcc"; //REPLACE THE KEY WITH YOUR KEY
     var queryType = "https://www.googleapis.com/youtube/v3/channels";  // default query type
     
     if(config.type=='listPlaylistItems')
@@ -56,7 +65,7 @@ var YoutubeResource = function(config){
 }
 
 
-YoutubeResource.prototype.queryURL = function(params,filter, optParams){
+YoutubeResource.prototype.queryURL = function(params,filter, optParams) {
     
     var filterStr = JSON.stringify(filter);
     filterStr = filterStr.replace(/\{|\}|\"|/g,"");
@@ -72,8 +81,7 @@ YoutubeResource.prototype.queryURL = function(params,filter, optParams){
         .replace('{{CODE}}', this.key);
 }
 
-function makeValid(optParams)
-{
+function makeValid(optParams) {
     // console.log(optParams);
     var fields = optParams.fields;
     // console.log(fields);
@@ -99,8 +107,7 @@ function makeValid(optParams)
     return valid;
 }
 
-function makeValidFields(fields)
-{
+function makeValidFields(fields) {
     var valid = fields.replace(/,/g,"%2C");
     return valid;
     

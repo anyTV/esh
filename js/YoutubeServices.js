@@ -113,11 +113,9 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
                                                 else
                                                     unfinished.push(result.video);
                                                     
-                                            
-                                                $rootScope.completedData = {"finished":finished,"unfinished":unfinished};
                                                 // return result here
                                                 if(finished.length+unfinished.length == processCount)
-                                                    deferred.resolve({"finished":finished,"unfinished":unfinished,"mode":result.mode}); 
+                                                    deferred.resolve({"finished":finished, "unfinished":unfinished, "mode":result.mode, "status":result.status});
                                              
                                             });
 
@@ -133,81 +131,74 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
                                 if(isTemplate())
                                 {
                                         
-                                                if(getMode() == "delete")
+                                    if(getMode() == "delete")
+                                    {
+                                        var i=0;
+                                        var xmlClearList =[];
+                                        videos.forEach(function(video){
+                                        
+                                            // annotationsServices.getAnnotationTemplateOnly(getTemplate(),video).then(function(xml)
+                                            // {   
+                                                // xmlClearList[i] = xml;
+                                                xmlClearList[i] = annotationsServices.getAnnotationTemplateOnly(getTemplate(),video);
+                                                var xmlString = new XMLSerializer().serializeToString(xmlClearList[i]);
+                                                // xmlString = xmlString.replace(/http:\/\/www\.youtube\.com\/watch\?v=[-A-Za-z0-9_]{11}/g,'http://www.youtube.com/watch?v='+video.id);
+                                                xmlClearList[i] = annotationsServices.updateXML(xmlString,{"video":video.id,"token":getToken()},getMode());
+                                                logConsole("Clear template XML",xmlClearList[i]);
+                                                backgroundServices.sendXML(xmlClearList[i],getMode(),video).then(function(result)
                                                 {
-                                                    var i=0;
-                                                    var xmlClearList =[];
-                                                    videos.forEach(function(video){
+                                                    logConsole("Clear template result",result);   
+                                                    // var newXML = annotationsServices.updateXML(publishXML,{"video":result.video.id,"token":getToken()});
                                                     
-                                                        // annotationsServices.getAnnotationTemplateOnly(getTemplate(),video).then(function(xml)
-                                                        // {   
-                                                            // xmlClearList[i] = xml;
-                                                            xmlClearList[i] = annotationsServices.getAnnotationTemplateOnly(getTemplate(),video);
-                                                            var xmlString = new XMLSerializer().serializeToString(xmlClearList[i]);
-                                                            // xmlString = xmlString.replace(/http:\/\/www\.youtube\.com\/watch\?v=[-A-Za-z0-9_]{11}/g,'http://www.youtube.com/watch?v='+video.id);
-                                                            xmlClearList[i] = annotationsServices.updateXML(xmlString,{"video":video.id,"token":getToken()},getMode());
-                                                            logConsole("Clear template XML",xmlClearList[i]);
-                                                            backgroundServices.sendXML(xmlClearList[i],getMode(),video).then(function(result)
-                                                            {
-                                                                if(result.status == 200) // then publish
-                                                                {
-                                                                    logConsole("Clear template result",result);   
-                                                                    // var newXML = annotationsServices.updateXML(publishXML,{"video":result.video.id,"token":getToken()});
-                                                                    
-                                                                    // backgroundServices.sendXML(newXML,"publish",result.video).then(function(published)
-                                                                    // {
-                                                                        // console.log(published);
-                                                                        (result.status == 200)?(finished.push(result.video)):(unfinished.push(result.video));
-//                                                                             
-                                                                        // $rootScope.completedData = {"finished":finished,"unfinished":unfinished};
-                                                                        // // return published;  
-                                                                        if(finished.length+unfinished.length == processCount)
-                                                                            deferred.resolve({"finished":finished,"unfinished":unfinished,"mode":result.mode}); 
-                                                                    // });
-                                                                }
-                                                            });
-                                                        // });
-                                                        i++;
-                                                    });
-                                                        
-                                                }
-                                                else
-                                                {
-                                                    var xmlList = [], i=0;
-                                                    videos.forEach(function(video)
-                                                    {
-                                                        var result = annotationsServices.customizeTemplate(video);      
-                                                        xmlList[i] = result.xml;
-                                                       i++;
-                                                    });
-                
-                                                    i=0;
-                                                    videos.forEach(function(video) {
-                                                            var xmlString = new XMLSerializer().serializeToString(xmlList[i]);
-                                                            xmlList[i] = annotationsServices.updateXML(xmlString,{"video":video.id,"token":getToken()},getMode());
-                                                            logConsole("Save template XML",xmlList[i]);
-                                                            // video.xml = new XMLSerializer().serializeToString(xmlList[i]);
-                                                            backgroundServices.sendXML(xmlList[i],getMode(),video).then(function(result)
-                                                            {
-                                                                logConsole("Save template result",result);
-                                                                (result.status == 200)?(finished.push(result.video)):(unfinished.push(result.video));
-                                                                
-                                                                $rootScope.completedData = {"finished":finished,"unfinished":unfinished};
-                                                                // return result; 
-                                                                if(finished.length+unfinished.length == processCount)
-                                                                    deferred.resolve({"finished":finished,"unfinished":unfinished,"mode":result.mode});  
-                                                            });
-                                                        
-                                                        i++;
-                                                    });
-                                                }
+                                                    // backgroundServices.sendXML(newXML,"publish",result.video).then(function(published)
+                                                    // {
+                                                        // console.log(published);
+                                                    (result.status == 200)?(finished.push(result.video)):(unfinished.push(result.video));
+                                                    // // return published;  
+                                                    if(finished.length+unfinished.length == processCount)
+                                                        deferred.resolve({"finished":finished, "unfinished":unfinished, "mode":result.mode, "status":result.status});
+                                                    // });
+                                                });
+                                            // });
+                                            i++;
+                                        });
+                                            
+                                    }
+                                    else
+                                    {
+                                        var xmlList = [], i=0;
+                                        videos.forEach(function(video)
+                                        {
+                                            var result = annotationsServices.customizeTemplate(video);      
+                                            xmlList[i] = result.xml;
+                                           i++;
+                                        });
+    
+                                        i=0;
+                                        videos.forEach(function(video) {
+                                            var xmlString = new XMLSerializer().serializeToString(xmlList[i]);
+                                            xmlList[i] = annotationsServices.updateXML(xmlString,{"video":video.id,"token":getToken()},getMode());
+                                            logConsole("Save template XML",xmlList[i]);
+                                            // video.xml = new XMLSerializer().serializeToString(xmlList[i]);
+                                            backgroundServices.sendXML(xmlList[i],getMode(),video).then(function(result)
+                                            {
+                                                logConsole("Save template result",result);
+                                                (result.status == 200)?(finished.push(result.video)):(unfinished.push(result.video));
+                                                
+                                                // return result; 
+                                                if(finished.length+unfinished.length == processCount)
+                                                    deferred.resolve({"finished":finished, "unfinished":unfinished, "mode":result.mode, "status":result.status});
+                                            });
+                                            
+                                            i++;
+                                        });
+                                    }
                                 }
                                 else
                                 {
                                     //OVERRIDE
                                     logConsole("MODE",getMode());
-                                    if(getMode() == "deleteall")
-                                    {
+                                    if(getMode() == "deleteall") {
                                         setMode("delete");
                                         var annotation_url = "http://www.youtube.com/watch?v="+videos[0].id;
                                     }
@@ -215,6 +206,7 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
                                         var annotation_url = getSourceVideoInfo().url;
                                     backgroundServices.getAnnotation(annotation_url).then(function(xmlString,status)
                                     {
+                                        logConsole("xmlstring unedited",xmlString);
                                         getChannelUsername($rootScope.userInfo.channel.id).then(function(channels,status)
                                         {
                                             // console.log(channels.entry.yt$username.$t);
@@ -236,20 +228,19 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
                                                 xmlList[i] = annotationsServices.updateXML(xmlString,{"video":video.id,"token":getToken()},getMode());
                                                 
                                                 if(getMode() == "save") {
-                                                    var annotationsSorted = annotationsServices.decodeXML(xmlList[i],hmsToSeconds(getSourceVideoInfo().contentDetails.duration));
-                                                    annotationsServices.fixTime(annotationsSorted,{"source":hmsToSeconds(getSourceVideoInfo().contentDetails.duration),"destination":hmsToSeconds(video.duration)}); 
+                                                    annotationsServices.fixTimeByPercentage(xmlList[i], 
+                                                        annotationsServices.getPercentageDifference(hmsToSeconds(getSourceVideoInfo().contentDetails.duration), hmsToSeconds(video.duration)), 
+                                                        {"source":hmsToSeconds(getSourceVideoInfo().contentDetails.duration),"destination":hmsToSeconds(video.duration)});
                                                 }
-                                                
+                                                logConsole("after edit", new XMLSerializer().serializeToString(xmlList[i]));
                                                 logConsole("Save XML",xmlList[i]);
                                                 // video.xml = new XMLSerializer().serializeToString(xmlList[i]);
                                                 backgroundServices.sendXML(xmlList[i],getMode(),video).then(function(result) {
                                                     logConsole("Save result",result);
                                                     (result.status == 200)?(finished.push(result.video)):(unfinished.push(result.video));
-                                                    if(getMode() != "delete") 
-                                                        $rootScope.completedData = {"finished":finished,"unfinished":unfinished};
                                                         // return result; 
                                                     if(finished.length+unfinished.length == processCount)
-                                                        deferred.resolve({"finished":finished,"unfinished":unfinished,"mode":result.mode});  
+                                                        deferred.resolve({"finished":finished, "unfinished":unfinished, "mode":result.mode, "status":result.status});  
                                                 });
                                                 i++;
                                             });
@@ -438,6 +429,11 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
                             if(err = chrome.extension.lastError)
                                 alert("There was an error injecting script : "+err.message);
                             chrome.tabs.remove(tab.id);
+                            if(token === undefined) {
+                                deferred.reject({"msg":"Cannot get permission to edit annotations. Please login or switch account to " 
+                                                + $rootScope.userInfo.displayName.substring(0, 14) 
+                                                + "... on <a target='_blank' href = 'http://www.youtube.com'>YouTube</a>."});
+                            }
                             setToken(token);
                             continueProcess = false;
                             

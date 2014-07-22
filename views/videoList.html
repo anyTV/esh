@@ -1,7 +1,7 @@
 <div style="margin-bottom:9px;">
     <div class="btn-group">
         <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-            Filter by: {{filterByToggle.name}}
+            Filter by: {{filter.name}}
             <span class="caret"></span>
         </a>
         <ul class="dropdown-menu">
@@ -11,17 +11,17 @@
         </ul>
     </div>
 </div>
-    <div id = "post-list" when-scrolled="loadMore();" class ="table-bordered">
+    <div id = "post-list" when-scrolled="load_videos();" class ="table-bordered">
         <ul  id="ul-list" class="thumbnails">
-            <li  class="span4" id = "post-box" ng-repeat="video in filteredVideo = (videos | filter:search.snippet.title | filter:filterByToggle.filter | orderBy:video.snippet.publishedAt )">
-                <div id="post-selected_{{video.toggle}}" class="thumbnail" ng-click ="toggleVideo(video.snippet.resourceId.videoId);toggleCheckbox();" tooltip-placement="bottom"  tooltip="{{video.snippet.title}} : {{video.duration}}">
+            <li  class="span4" id = "post-box" ng-repeat="video in filteredVideo = (videos | filter:search.snippet.title | filter:filter.mode | orderBy:video.snippet.publishedAt )">
+                <div id="post-selected_{{video.toggle}}" class="thumbnail" ng-click ="toggleVideo(video.snippet.resourceId.videoId);" tooltip-placement="bottom"  tooltip="{{video.snippet.title}} : {{video.duration}}">
                     <center><a id = 'ylink' href =""><img id = "img-video" ng-src ="{{video.snippet.thumbnails.medium.url}}"/></a></center>
                     <center>
                             <a id = 'ylink' target='_blank' href = ''><div class="vid-title-container">{{video.snippet.title | limitTo:3}}</div></a>
                             <span class="badge" ng-show="video.mode" ng-class="{'badge-important':video.mode=='delete','badge-success':video.mode=='publish','badge-info':video.mode=='save','badge-inverse':video.mode =='deleteall'}">
                                 <div ng-switch on = "video.mode">
                                     <div ng-switch-when= "publish">Active Videobar</div>
-                                    <!-- <div ng-switch-when= "save">Saved Videobar</div> -->
+                                    <div ng-switch-when= "save">Saved Videobar</div>
                                     <div ng-switch-when= "delete">Deleted Videobar</div>
                                     <div ng-switch-when= "deleteall">All annotations deleted</div>
                                     <div ng-switch-when = "none">No Videobar</div>
