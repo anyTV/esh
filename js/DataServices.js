@@ -4,7 +4,7 @@
 
 myExt.factory("dataServices",function($http,$q,$rootScope)
 {
-    var connectLocal = true;
+    var connectLocal = false;
 
     var localURL = "http://local.mya.tm/";
     var liveURL = "http://www.videobar.tm/apis/";
