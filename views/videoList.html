@@ -1,7 +1,7 @@
 <div style="margin-bottom:9px;">
     <div class="btn-group">
         <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-            Filter by: {{filter.name}}
+            {{ trans("filter_by") }}: {{filter.name}}
             <span class="caret"></span>
         </a>
         <ul class="dropdown-menu">
@@ -17,16 +17,16 @@
                 <div id="post-selected_{{video.toggle}}" class="thumbnail" ng-click ="toggleVideo(video.snippet.resourceId.videoId);" tooltip-placement="bottom"  tooltip="{{video.snippet.title}} : {{video.duration}}">
                     <center><a id = 'ylink' href =""><img id = "img-video" ng-src ="{{video.snippet.thumbnails.medium.url}}"/></a></center>
                     <center>
-                            <a id = 'ylink' target='_blank' href = ''><div class="vid-title-container">{{video.snippet.title | limitTo:3}}</div></a>
+                            <a id = 'ylink' target='_blank' href = ''><div class="vid-title-container">{{video.snippet.title}}</div></a>
                             <span class="badge" ng-show="video.mode" ng-class="{'badge-important':video.mode=='delete','badge-success':video.mode=='publish','badge-info':video.mode=='save','badge-inverse':video.mode =='deleteall'}">
                                 <div ng-switch on = "video.mode">
-                                    <div ng-switch-when= "publish">Active Videobar</div>
-                                    <div ng-switch-when= "save">Saved Videobar</div>
-                                    <div ng-switch-when= "delete">Deleted Videobar</div>
-                                    <div ng-switch-when= "deleteall">All annotations deleted</div>
-                                    <div ng-switch-when = "none">No Videobar</div>
+                                    <div ng-switch-when= "publish">{{trans("active")}} {{trans("videobar")}}</div>
+                                    <div ng-switch-when= "save">{{trans("saved")}} {{trans("videobar")}}</div>
+                                    <div ng-switch-when= "delete">{{trans("deleted")}} {{trans("videobar")}}</div>
+                                    <div ng-switch-when= "deleteall">{{trans("deleted_annotations")}}</div>
+                                    <div ng-switch-when = "none">{{trans("no_videobar")}}</div>
                                     <div ng-switch-when="loading..."><img src="images/loading-bar.gif" width="20px"/></div>
-                                    <div ng-switch-when="error">Can't check in database</div>
+                                    <div ng-switch-when="error">{{trans("database_error")}}</div>
                                 </div>
                             </span>
                     </center><br/>
@@ -47,7 +47,7 @@
             </tr-->
             <tr>
                 </br>
-                <td colspan="3" style="text-align:right"><center><span class="badge"><small>No. of items : {{filteredVideo.length}}/{{videos.length}}</small></span></center></td>
+                <td colspan="3" style="text-align:right"><center><span class="badge"><small>{{ trans("no_of_items") }} : {{filteredVideo.length}}/{{videos.length}}</small></span></center></td>
             </tr>
         </table>
     </center>

@@ -52,7 +52,7 @@
         <header class="navbar">
     		<nav class="navbar-inner" style="height:32px;" >
                 <div class = "pull-left">
-        			<a class="brand" href=""><img src ="images/19-g.png"/>&nbsp;Videobar on YouTube</a>
+        			<a class="brand" id = "brand" href=""><img src ="images/19-g.png"/>&nbsp;{{ trans("chrome_extension_name") }}</a>
         			<!-- <button class="btn btn-primary btn-mini"  style="margin-left: -13px!important;margin-top:8px;">Videobars!</button> -->
         			<div style="margin-top:7px;" class="btn-group btn-mini" ng-show = "hasAccessToken" tooltip-placement="right" tooltip ="{{completedData.finished.length}} success" >
         			    <a hre="#" class="btn btn-mini dropdown-toggle" data-toggle="dropdown">
@@ -79,10 +79,10 @@
                             {{userInfo.displayName}}&nbsp;<span class="caret"></span><!--span class="caret"></span-->
                         </a>
                          <ul class="dropdown-menu"> 
-                             <li><a href="#" ng-click = "openExternalLinks('http://www.any.tv');">any.TV Website</a></li>
-                             <li><a href="#" ng-click = "openExternalLinks('http://www.youtube.com/anytvnetwork');">any.TV Network</a></li>
+                             <li><a href="#" ng-click = "openExternalLinks('http://www.any.tv');">any.TV {{ trans("website") }}</a></li>
+                             <li><a href="#" ng-click = "openExternalLinks('http://www.youtube.com/anytvnetwork');">any.TV {{trans("network")}}</a></li>
                              <!-- <li><a href="settings.html" target="_blank">Settings</a></li> -->
-                             <li><a href="#" ng-click = "openExternalLinks('options.html');">Create or edit Videobar!</a></li>
+                             <li><a href="#" ng-click = "openExternalLinks('options.html');">{{ trans("create_videobar") }}!</a></li>
                              <li id="sendAnnotation" ng-click = "auth();"><a href="#">{{auth_text}}</a></li>
                          </ul>
                     </div>
@@ -92,9 +92,9 @@
         </header>
         <section>
             <article id ="resultVideos-container" ng-show = "hasAccessToken" style="margin-top:-15px;" ng-init="multi_select=false">
-                &nbsp;<input type="search" ng-show="hasAccessToken" style="height:19px!important;margin-top:4.5px!important;width:320px;" class="input-mini" size = '320px' ng-model="search.snippet.title" placeholder="Search videos">
+                &nbsp;<input type="search" ng-show="hasAccessToken" style="height:19px!important;margin-top:4.5px!important;width:320px;" class="input-mini" size = '320px' ng-model="search.snippet.title" placeholder="{{ trans('search') }} {{ trans('video')}}s">
                 <div class="input-group-btn btn-group"><button class="btn btn-default" style="margin-top:-6px;"><span class="icon-search"></span></button></div>
-                <button class="btn btn-primary btn-small pull-right" style="margin-top:5px;" ng-click="openExternalLinks('options.html');">Create or edit Videobar!</button>
+                <button class="btn btn-primary btn-small pull-right" style="margin-top:5px;" ng-click="openExternalLinks('options.html');">{{ trans("create_videobar") }}!</button>
                 <accordion close-others="true" >
                     <!--accordion-group>
                          <accordion-heading>
@@ -131,7 +131,7 @@
                     </accordion-group-->
                     <accordion-group is-open="true">
                         <accordion-heading>
-                            <center><button class="btn btn-inverse btn-small btn-block">Copy annotations from <span tooltip-placement ="bottom" tooltip="{{pageTitle}}">{{pageTitleShort}}</span> <span class="label label-important" >{{vidLabel}} </span> </button></center>
+                            <center><button class="btn btn-inverse btn-small btn-block">{{ trans("copy_from") }} <span tooltip-placement ="bottom" tooltip="{{pageTitle}}">{{pageTitleShort}}</span> <span class="label label-important" >{{vidLabel}} </span> </button></center>
                          </accordion-heading>
                             <div ng-include = "'views/videoList.html'" ></div>
                         </br>
@@ -140,23 +140,23 @@
                             <alert ng-repeat="alert in alerts" type="alert.type" style ="width:320px;" close = "closeAlert($index);"><div ng-bind-html = "alert.msg"></div></alert>
                             </center>
                             <center>
-                            <b>Annotations:</b>&nbsp;
+                            <b>{{ trans("annotations") }}:</b>&nbsp;
                                 <!-- <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "saveAnnotations('save');" class="btn btn-success btn-small">Save</button> -->
-                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "copyAnnotations('publish');" class="btn btn-success btn-small" tooltip-placement="top" tooltip="Save and publish copied annotations">Save</button>
-                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "openAnnotEditor();" class="btn btn-primary btn-small" tooltip-placement="top" tooltip="Edit on youtube">Edit</button>
-                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "openYoutubeVideo();" class="btn btn-small" tooltip-placement="top" tooltip="Watch it on youtube">View</button>
+                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "copyAnnotations('publish');" class="btn btn-success btn-small" tooltip-placement="top" tooltip="{{ trans('annotations_copy') }}">{{ trans("save") }}</button>
+                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "openAnnotEditor();" class="btn btn-primary btn-small" tooltip-placement="top" tooltip="{{ trans('edit_on_youtube') }}">{{ trans("edit") }}</button>
+                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "openYoutubeVideo();" class="btn btn-small" tooltip-placement="top" tooltip="{{ trans('watch') }}">{{ trans("view") }}</button>
                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                 
-                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "deleteAnnotations('delete');" class="btn btn-danger btn-small" tooltip-placement="top" tooltip="Clear copied annotations">Clear</button>
-                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "deleteAnnotations('deleteall');" class="btn btn-inverse btn-small" tooltip-placement="top" tooltip="Clear all published annotations">Clear all</button>
+                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "deleteAnnotations('delete');" class="btn btn-danger btn-small" tooltip-placement="top" tooltip="{{ trans('clear_annotations_copy') }}">{{ trans("clear") }}</button>
+                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "deleteAnnotations('deleteall');" class="btn btn-inverse btn-small" tooltip-placement="top" tooltip="{{ trans('clear_annotations_publish') }}">{{ trans("clear_all") }}</button>
                             </center>
                     </accordion-group>
                 </accordion>
             </article>
         </section>
 		<footer>
-		    <section><center><a href="#">Home</a> &nbsp; <a href="https://www.facebook.com/anyTVnetwork" target="_blank">Facebook</a> &nbsp; <a href="http://twitter.com/anyTVnetwork" target="_blank">Twitter</a> &nbsp; <a href="http://plus.google.com/109971475987405213729/videos" target="_blank">Google+</a> &nbsp; <a href="http://www.youtube.com/user/anyTVnetwork" target="_blank">YouTube</a><br>
-            <a href="http://www.any.tv">any.TV Limited</a> &copy; 2013 | Believe in You.
+		    <section><center><a href="https://www.facebook.com/anyTVnetwork" target="_blank">Facebook</a> &nbsp; <a href="http://twitter.com/anyTVnetwork" target="_blank">Twitter</a> &nbsp; <a href="http://plus.google.com/109971475987405213729/videos" target="_blank">Google+</a> &nbsp; <a href="http://www.youtube.com/user/anyTVnetwork" target="_blank">YouTube</a><br>
+            <a href="http://www.any.tv">any.TV Limited</a> &copy; 2014 | Believe in You.
          </center></section><br/>
 	    </footer>
     	</div>

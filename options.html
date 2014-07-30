@@ -36,9 +36,9 @@
         <header class="navbar navbar-fixed-top">
             <nav class="navbar-inner clearfix" style="height:32px;" >
                 <div class = "pull-left">
-                    <a style="margin-left:10px;" class="brand" href=""><img src="images/19-g.png"/> Videobar on YouTube</a>
+                    <a style="margin-left:10px;" class="brand" href=""><img src="images/19-g.png"/> {{ trans("chrome_extension_name") }}</a>
                     <!-- <button ng-click="testMongo();">savetest</button> -->
-                    <input type="search" ng-show="hasAccessToken" style="height:20px!important;margin-top:4.5px!important;width:220px;" class="input-mini" size = '320px' ng-model="search.snippet.title" placeholder="Search">
+                    <input type="search" ng-show="hasAccessToken" style="height:20px!important;margin-top:4.5px!important;width:220px;" class="input-mini" size = '320px' ng-model="search.snippet.title" placeholder="{{ trans('search') }} {{ trans('video')}}s">
                     
                     <div style="margin-top:-6px;" class="btn-group btn-mini" ng-show = "hasAccessToken" tooltip-placement="right" tooltip ="{{completedData.finished.length}} success" >
                         <a hre="#" class="btn btn-mini dropdown-toggle" data-toggle="dropdown">
@@ -66,8 +66,8 @@
                         {{userInfo.displayName}}&nbsp;<span class="caret"></span><!--span class="caret"></span-->
                     </a>
                      <ul class="dropdown-menu"> 
-                         <li><a href="#" ng-click = "openExternalLinks('http://www.any.tv');">any.TV Website</a></li>
-                         <li><a href="#" ng-click = "openExternalLinks('http://www.youtube.com/anytvnetwork');">any.TV Network</a></li>
+                         <li><a href="#" ng-click = "openExternalLinks('http://www.any.tv');">any.TV {{ trans("website") }}</a></li>
+                         <li><a href="#" ng-click = "openExternalLinks('http://www.youtube.com/anytvnetwork');">any.TV {{trans("network")}}</a></li>
                          <!-- <li><a href="settings.html" target="_blank">Settings</a></li> -->
                          <li id="sendAnnotation" ng-click = "auth();"><a href="#">{{auth_text}}</a></li>
                      </ul>
@@ -114,23 +114,21 @@
                                                                 <center>
                                                                     <div ng-switch on = "$index">
                                                                         <div ng-switch-when= "0">
-                                                                            <b>Font Color:</b>&nbsp;
+                                                                            <b ng-bind="trans('font_color') + ':'"></b>&nbsp;
                                                                             <div class="btn-group">
-                                                                                <button type="button" class="btn btn-primary btn-mini" ng-model="video.buttons.fontColor" btn-radio="'White'">White</button>
-                                                                                <button type="button" class="btn btn-primary btn-mini" ng-model="video.buttons.fontColor" btn-radio="'Black'">Black</button>
+                                                                                <button type="button" class="btn btn-primary btn-mini" ng-model="video.buttons.fontColor" btn-radio="'White'" ng-bind="trans('white')"></button>
+                                                                                <button type="button" class="btn btn-primary btn-mini" ng-model="video.buttons.fontColor" btn-radio="'Black'" ng-bind="trans('black')"></button>
                                                                             </div>
                                                                         </div>
                                                                         <div ng-switch-default>
-                                                                                <b>Font Color:</b>&nbsp;
+                                                                                <b ng-bind="trans('font_color') + ':'"></b>&nbsp;
                                                                                 <div class="btn-group">
-                                                                                    <button type="button" class="btn btn-primary btn-mini" ng-model="video.buttons.fontColor" btn-radio="'White'">White</button>
-                                                                                    <button type="button" class="btn btn-primary btn-mini" ng-model="video.buttons.fontColor" btn-radio="'Black'">Black</button>
+                                                                                    <button type="button" class="btn btn-primary btn-mini" ng-model="video.buttons.fontColor" btn-radio="'White'" ng-bind="trans('white')"></button>
+                                                                                    <button type="button" class="btn btn-primary btn-mini" ng-model="video.buttons.fontColor" btn-radio="'Black'" ng-bind="trans('white')"></button>
                                                                                 </div>
-                                                                                <button type="button" ng-click = "copyButtons(video);" class="btn btn-small btn-danger">
-                                                                                    Copy settings of first
+                                                                                <button type="button" ng-click = "copyButtons(video);" class="btn btn-small btn-danger" ng-bind = "trans('copy_settings')">
                                                                                 </button>
-                                                                                <button type ="button" ng-click = "rearrangeOrder($index);" class="btn btn-small btn-danger">
-                                                                                    Make this first.
+                                                                                <button type ="button" ng-click = "rearrangeOrder($index);" class="btn btn-small btn-danger" ng-bind = "trans('make_this_first')">
                                                                                 </button>
                                                                         </div>
                                                                     </div>
@@ -156,10 +154,10 @@
                                                              <table class="table table-bordered">
                                                                 <tr>
                                                                     <th></th>
-                                                                    <th>Text</th>
-                                                                    <th  ng-show = "button.allowEditDuration">Start</th>
-                                                                    <th  ng-show = "button.allowEditDuration">Stop</th>
-                                                                    <th>Action</th>
+                                                                    <th>{{ trans("text") }}</th>
+                                                                    <th  ng-show = "button.allowEditDuration">{{ trans("start") }}</th>
+                                                                    <th  ng-show = "button.allowEditDuration">{{ trans("stop") }}</th>
+                                                                    <th>{{ trans("action") }}</th>
                                                                 </tr>
                                                                 <tr ng-repeat="instance in button.instances">
                                                                     <td style="width:10px">
@@ -170,8 +168,8 @@
                                                                     <td  ng-show = "button.allowEditDuration"><input type ="text" ng-model ="instance.duration.stop" required class="timeClass" /></td>
                                                                     <td>
                                                                         <div ng-switch on ="button.actiontype">
-                                                                            <div ng-switch-when="url">Insert URL : <input type ="url" required ng-model ="instance.action.url"/></div>
-                                                                            <div ng-switch-when="time">Skip to : <input type ="text" required ng-model ="instance.action.time" class="timeClass"/></div>
+                                                                            <div ng-switch-when="url">{{ trans("insert_url") }} : <input type ="url" required ng-model ="instance.action.url"/></div>
+                                                                            <div ng-switch-when="time">{{ trans("skip_to") }} : <input type ="text" required ng-model ="instance.action.time" class="timeClass"/></div>
                                                                         </div>
                                                                         
                                                                     </td>
@@ -186,7 +184,7 @@
                                                                                         <span class="caret"></span>
                                                                                     </button>
                                                                                     <ul class="dropdown-menu">
-                                                                                        <li><a href= "" ng-click = "templateOptions.addMode = !templateOptions.addMode"><span class="icon-remove icon-white"></span> Cancel</a></li>
+                                                                                        <li><a href= "" ng-click = "templateOptions.addMode = !templateOptions.addMode"><span class="icon-remove icon-white"></span> {{ trans("cancel") }}</a></li>
                                                                                     </ul>
                                                                                 </div>
                                                                             </div>
@@ -208,8 +206,8 @@
                                                                     </td>
                                                                     <td>
                                                                         <div ng-switch on ="button.actiontype">
-                                                                            <div ng-switch-when="url" ng-show="templateOptions.addMode">Insert URL : <input name="newAction" type ="url" ng-model="video.newAction.url" required /></div>
-                                                                            <div ng-switch-when="time" ng-show = "templateOptions.addMode" >Skip to : <input type ="text" ng-model ="video.newAction.time" class="timeClass" /></div>
+                                                                            <div ng-switch-when="url" ng-show="templateOptions.addMode">{{ trans("insert_url") }} : <input name="newAction" type ="url" ng-model="video.newAction.url" required /></div>
+                                                                            <div ng-switch-when="time" ng-show = "templateOptions.addMode" >{{ trans("skip_to") }} : <input type ="text" ng-model ="video.newAction.time" class="timeClass" /></div>
                                                                         </div>
                                                                     </td>
                                                                     
@@ -234,16 +232,16 @@
                                             </center>
                                             <center>
                                                 <alert ng-repeat="alert in alerts" type="alert.type" style ="width:320px;" close = "closeAlert($index);"><div ng-bind-html = "alert.msg"></div></alert>
-                                            <b>Annotations:</b>&nbsp;
-                                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "saveAnnotations('publish',template);" class="btn btn-success btn-small" tooltip-placement="top" tooltip="Save and publish your annotations">Save</button>
+                                            <b>{{ trans("annotations") }}:</b>&nbsp;
+                                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "saveAnnotations('publish',template);" class="btn btn-success btn-small" tooltip-placement="top" tooltip="{{trans('annotations_save')}}">{{ trans("save") }}</button>
                                                 <!-- <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "saveAnnotations('save',template);" class="btn btn-success btn-small">Save</button> -->
-                                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "openAnnotEditor();" class="btn btn-primary btn-small" tooltip-placement="top" tooltip="Edit on youtube">Edit</button>
-                                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "openYoutubeVideo();" class="btn btn-small" tooltip-placement="top" tooltip="Watch on youtube">View</button>
+                                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "openAnnotEditor();" class="btn btn-primary btn-small" tooltip-placement="top" tooltip="{{trans('edit_on_youtube')}}">{{ trans("edit") }}</button>
+                                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "openYoutubeVideo();" class="btn btn-small" tooltip-placement="top" tooltip="{{trans('watch')}}">{{ trans("view") }}</button>
                                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                 
-                                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "deleteAnnotations('delete',template);" class="btn btn-danger btn-small" tooltip-placement="top" tooltip="Clear videobar annotations">Clear</button>
+                                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "deleteAnnotations('delete',template);" class="btn btn-danger btn-small" tooltip-placement="top" tooltip="{{trans('clear_annotations')}}">{{ trans("clear") }}</button>
                                                 
-                                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "deleteAnnotations('deleteall');" class="btn btn-inverse btn-small" tooltip-placement="top" tooltip="Clear all published annotations">Clear all</button>
+                                                <button id="sendAnnotation" ng-disabled = "selected.thereIs" ng-click = "deleteAnnotations('deleteall');" class="btn btn-inverse btn-small" tooltip-placement="top" tooltip="{{trans('clear_annotations_publish')}}">{{ trans("clear_all") }}</button>
 
                                             </center>
                                         </div>
@@ -257,8 +255,8 @@
             </article>
         </section>
         <footer style="clear:both;">
-            <section><center><a href="#">Home</a> &nbsp; <a href="https://www.facebook.com/anyTVnetwork" target="_blank">Facebook</a> &nbsp; <a href="http://twitter.com/anyTVnetwork" target="_blank">Twitter</a> &nbsp; <a href="http://plus.google.com/109971475987405213729/videos" target="_blank">Google+</a> &nbsp; <a href="http://www.youtube.com/user/anyTVnetwork" target="_blank">YouTube</a><br>
-            <a href="http://www.any.tv">any.TV Limited</a> &copy; 2013 | Believe in You.
+            <section><center><a href="https://www.facebook.com/anyTVnetwork" target="_blank">Facebook</a> &nbsp; <a href="http://twitter.com/anyTVnetwork" target="_blank">Twitter</a> &nbsp; <a href="http://plus.google.com/109971475987405213729/videos" target="_blank">Google+</a> &nbsp; <a href="http://www.youtube.com/user/anyTVnetwork" target="_blank">YouTube</a><br>
+            <a href="http://www.any.tv">any.TV Limited</a> &copy; 2014 | Believe in You.
          </center></section>
         </footer>
         <br/>

@@ -430,9 +430,7 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
                                 alert("There was an error injecting script : "+err.message);
                             chrome.tabs.remove(tab.id);
                             if(token === undefined) {
-                                deferred.reject({"msg":"Cannot get permission to edit annotations. Please login or switch account to " 
-                                                + $rootScope.userInfo.displayName.substring(0, 14) 
-                                                + "... on <a target='_blank' href = 'http://www.youtube.com'>YouTube</a>."});
+                                deferred.reject({"msg": locale.getMessage("permission_err") + " " + locale.getMessage("switch_account", $rootScope.userInfo.displayName.substring(0, 14))});
                             }
                             setToken(token);
                             continueProcess = false;

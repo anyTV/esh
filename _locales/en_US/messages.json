@@ -1,0 +1,275 @@
+{
+	"chrome_extension_name": {
+		"message": "Videobar on YouTube"
+	},
+	"chrome_extension_description": {
+		"message": "Create and program your own Videobar on YouTube or copy any YouTube annotations to your videos!"
+	},
+	"welcome": {
+		"message": "Welcome to"
+	},
+	"signing": {
+		"message": "Signing in..."
+	},
+	"signin_success": {
+		"message": "Successfully signed in."
+	},
+	"annot_found": {
+		"message": "Annotations found on this video."
+	},
+	"video": {
+		"message": "video"
+	},
+	"annotations": {
+		"message": "Annotations"
+	},
+	"create_videobar": {
+		"message": "Create or edit Videobar"
+	},
+	"copy": {
+		"message": "copy"
+	},
+	"filter_by": {
+		"message": "Filter by"
+	},
+	"search": {
+		"message": "Search"
+	},
+	"no_videobar": {
+		"message": "no videobar"
+	},
+	"load_video_finish": {
+		"message": "Done loading all videos."
+	},
+	"load_video_more": {
+		"message": "Scroll down to load more"
+	},
+	"loading_video_more": {
+		"message": "Loading more videos..."
+	},
+	"no_of_items": {
+		"message": "No. of items"
+	},
+	"save": {
+		"message": "Save"
+	},
+	"edit": {
+		"message": "Edit"
+	},
+	"view": {
+		"message": "View"
+	},
+	"clear": {
+		"message": "Clear"
+	},
+	"clear_all": {
+		"message": "Clear all"
+	},
+	"annotations_copy": {
+		"message": "Save and publish copied annotations"
+	},
+	"annotations_save": {
+		"message": "Save and publish videobar annotations"
+	},
+	"clear_annotations": {
+		"message": "Clear videobar annotations"
+	},
+	"edit_on_youtube": {
+		"message": "Edit on YouTube"
+	},
+	"watch": {
+		"message": "Watch it on YouTube"
+	},
+	"clear_annotations_copy": {
+		"message": "Clear copied annotations"
+	},
+	"clear_annotations_publish": {
+		"message": "Clear all published annotations"
+	},
+	"videobar": {
+		"message": "videobar"
+	},
+	"saved": {
+		"message": "Saved"
+	},
+	"published": {
+		"message": "Published"
+	},
+	"active": {
+		"message": "Active"
+	},
+	"deleted": {
+		"message": "Deleted"
+	},
+	"deleted_annotations": {
+		"message": "all annotations deleted"
+	},
+	"database_error": {
+		"message": "Can't check in database"
+	},
+	"no_template": {
+		"message": "No template"
+	},
+	"all": {
+		"message": "All"
+	},
+	"success": {
+		"message": "success"
+	},
+	"error": {
+		"message": "error"
+	},
+	"load_settings": {
+		"message": "Loading your settings."
+	},
+	"font_color": {
+		"message": "Font color"
+	},
+	"white": {
+		"message": "White"
+	},
+	"black": {
+		"message": "Black"
+	},
+	"program_videobar": {
+		"message": "Program this Videobar"
+	},
+	"skip_ahead": {
+		"message": "Skip ahead"
+	},
+	"skip_to": {
+		"message": "Skip to"
+	},
+	"star": {
+		"message": "Star"
+	},
+	"next_video": {
+		"message": "Next video"
+	},
+	"hide_videobar": {
+		"message": "Hide Videobar"
+	},
+	"official_channel": {
+		"message": "Official Channel"
+	},
+	"processing": {
+		"message": "Processing..."
+	},
+	"database_add": {
+		"message": "Adding records to database"
+	},
+	"no_annotations": {
+		"message": "Current video has no annotations."
+	},
+	"clear_confirm": {
+		"message": "Are you sure you want to clear?"
+	},
+	"clear_confirm_all": {
+		"message": "Are you sure you want to clear all?"
+	},
+	"select_video_err": {
+		"message": "Select a video first."
+	},
+	"no_template_err": {
+		"message": "No template selected."
+	},
+	"clear_complete": {
+		"message": "Clear process completed."
+	},
+	"clear_all_complete": {
+		"message": "Clear all annotations completed."
+	},
+	"publish_complete": {
+		"message": "Publish process completed."
+	},
+	"save_complete": {
+		"message": "Save process completed."
+	},
+	"clear_success": {
+		"message": "Successfully cleared."
+	},
+	"clear_all_success": {
+		"message": "Successfully cleared all annotations."
+	},
+	"publish_success": {
+		"message": "Successfully published."
+	},
+	"save_success": {
+		"message": "Successfully saved."
+	},
+	"failed": {
+		"message": "Failed"
+	},
+	"please_wait": {
+		"message": "Please wait until the operation is finished."
+	},
+	"sign_in": {
+		"message": "Sign in with YouTube"
+	},
+	"sign_out": {
+		"message": "Sign out"
+	},
+	"video_no_annotations": {
+		"message": "Video has no annotations"
+	},
+	"loading": {
+		"message": "Loading..."
+	},
+	"to": {
+		"message": "to"
+	},
+	"permission_err": {
+		"message": "Cannot get permission to edit annotations."
+	},
+	"switch_account": {
+		"message": "Please login or switch account to $username on YouTube",
+		"placeholders": {
+			"username": {
+				"content": "$1",
+				"example": "eshlee007"
+			}
+		}
+	},
+	"logging_out": {
+		"message": "Logging out"
+	},
+	"logout_success": {
+		"message": "Successfully logged out"
+	},
+	"copy_settings": {
+		"message": "Copy settings of first"
+	},
+	"make_this_first": {
+		"message": "Make this first"
+	},
+	"text": {
+		"message": "Text"
+	},
+	"action":{
+		"message": "Action"
+	},
+	"start": {
+		"message": "Start"
+	},
+	"stop": {
+		"message": "Stop"
+	},
+	"insert_url": {
+		"message": "Insert URL"
+	},
+	"cancel": {
+		"message": "Cancel"
+	},
+	"hide_this": {
+		"message": "Hide this"
+	},
+	"website": {
+		"message": "Website"
+	},
+	"network": {
+		"message": "Network"
+	},
+	"copy_from": {
+		"message": "Copy annotations from"
+	}
+}

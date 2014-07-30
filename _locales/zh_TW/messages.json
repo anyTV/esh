@@ -1,0 +1,275 @@
+{
+	"chrome_extension_name": {
+		"message": "YouTube的Videobar"
+	},
+	"chrome_extension_description": {
+		"message": "製作和設置您在YouTube上的專屬Videobar或復製任何YouTube影片內的注解至您的影片上!"
+	},
+	"welcome": {
+		"message": "歡迎 使用"
+	},
+	"signing": {
+		"message": "登入中..."
+	},
+	"signin_success": {
+		"message": "成功地已登入."
+	},
+	"annot_found": {
+		"message": "在這影片找到的註解."
+	},
+	"video": {
+		"message": "影片"
+	},
+	"annotations": {
+		"message": "註解"
+	},
+	"create_videobar": {
+		"message": "製作或編輯videobar"
+	},
+	"copy": {
+		"message": "復製"
+	},
+	"filter_by": {
+		"message": "篩選條件"
+	},
+	"search": {
+		"message": "搜尋"
+	},
+	"no_videobar": {
+		"message": "沒有videobar"
+	},
+	"load_video_finish": {
+		"message": "完成上傳所有影片."
+	},
+	"load_video_more": {
+		"message": "下滑營幕來上傳更多"
+	},
+	"loading_video_more": {
+		"message": "讀載更多的影片…"
+	},
+	"no_of_items": {
+		"message": "選項數量"
+	},
+	"save": {
+		"message": "儲存"
+	},
+	"edit": {
+		"message": "編輯"
+	},
+	"view": {
+		"message": "檢視"
+	},
+	"clear": {
+		"message": "清除"
+	},
+	"clear_all": {
+		"message": "清除全部"
+	},
+	"annotations_copy": {
+		"message": "儲存和公開復製的註解"
+	},
+	"annotations_save": {
+		"message": "儲存和公開videobar的註解"
+	},
+	"clear_annotations": {
+		"message": "清除videobar註解"
+	},
+	"edit_on_youtube": {
+		"message": "在YouTube上編輯"
+	},
+	"watch": {
+		"message": "在YouTube上觀看"
+	},
+	"clear_annotations_copy": {
+		"message": "清除復製註解"
+	},
+	"clear_annotations_publish": {
+		"message": "清除所有公開的註解"
+	},
+	"videobar": {
+		"message": "videobar"
+	},
+	"saved": {
+		"message": "已儲存"
+	},
+	"published": {
+		"message": "公開的"
+	},
+	"active": {
+		"message": "進展中"
+	},
+	"deleted": {
+		"message": "已刪除"
+	},
+	"deleted_annotations": {
+		"message": "刪除全部註解"
+	},
+	"database_error": {
+		"message": "無法在資料庫檢查"
+	},
+	"no_template": {
+		"message": "沒有樣版"
+	},
+	"all": {
+		"message": "全部"
+	},
+	"success": {
+		"message": "成功"
+	},
+	"error": {
+		"message": "錯誤"
+	},
+	"load_settings": {
+		"message": "讀載您的設定."
+	},
+	"font_color": {
+		"message": "字體顏色"
+	},
+	"white": {
+		"message": "白色"
+	},
+	"black": {
+		"message": "黑色"
+	},
+	"program_videobar": {
+		"message": "設置videobar"
+	},
+	"skip_ahead": {
+		"message": "跳過"
+	},
+	"skip_to": {
+		"message": "跳至"
+	},
+	"star": {
+		"message": "我的最愛"
+	},
+	"next_video": {
+		"message": "下一部影片"
+	},
+	"hide_videobar": {
+		"message": "穩藏videobar"
+	},
+	"official_channel": {
+		"message": "官方頻道"
+	},
+	"processing": {
+		"message": "處理中..."
+	},
+	"database_add": {
+		"message": "增加紀錄至資料庫"
+	},
+	"no_annotations": {
+		"message": "目前的影片尚未有註解."
+	},
+	"clear_confirm": {
+		"message": "您確定要清除?"
+	},
+	"clear_confirm_all": {
+		"message": "您確定要清除全部?"
+	},
+	"select_video_err": {
+		"message": "請先選擇一部影片."
+	},
+	"no_template_err": {
+		"message": "沒有選擇的樣版."
+	},
+	"clear_complete": {
+		"message": "清除已完成"
+	},
+	"clear_all_complete": {
+		"message": "清除所有註解已完成."
+	},
+	"publish_complete": {
+		"message": "已完成公開."
+	},
+	"save_complete": {
+		"message": "已完成儲存."
+	},
+	"clear_success": {
+		"message": "清除成功."
+	},
+	"clear_all_success": {
+		"message": "成功清除所有註解."
+	},
+	"publish_success": {
+		"message": "成功公開."
+	},
+	"save_success": {
+		"message": "儲存成功."
+	},
+	"failed": {
+		"message": "失敗"
+	},
+	"please_wait": {
+		"message": "請稍等運作結束."
+	},
+	"sign_in": {
+		"message": "登入YouTube"
+	},
+	"sign_out": {
+		"message": "登出"
+	},
+	"video_no_annotations": {
+		"message": "此影片沒有註解"
+	},
+	"loading": {
+		"message": "讀載中...."
+	},
+	"to": {
+		"message": "至"
+	},
+	"permission_err": {
+		"message": "無法取得權限來編輯註解。"
+	},
+	"switch_account": {
+		"message": "請登入或切換YouTube的帳號至 $username",
+		"placeholders": {
+			"username": {
+				"content": "$1",
+				"example": "eshlee007"
+			}
+		}
+	},
+	"logging_out": {
+		"message": "登出"
+	},
+	"logout_success": {
+		"message": "登出成功"
+	},
+	"copy_settings": {
+		"message": "復製第一個項目的設定"
+	},
+	"make_this_first": {
+		"message": "先設定這個"
+	},
+	"text": {
+		"message": "文字"
+	},
+	"action":{
+		"message": "動作"
+	},
+	"start": {
+		"message": "開始"
+	},
+	"stop": {
+		"message": "停止"
+	},
+	"insert_url": {
+		"message": "注入 URL"
+	},
+	"cancel": {
+		"message": "取消"
+	},
+	"hide_this": {
+		"message": "隱藏此"
+	},
+	"website": {
+		"message": "網站"
+	},
+	"network": {
+		"message": "群網"
+	},
+	"copy_from": {
+		"message": "復製註解出處"
+	}
+}

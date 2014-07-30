@@ -1,4 +1,5 @@
 var google = new GoogleResource();
+var locale = chrome.i18n;
 
 function byId(id) {
     return document.getElementById(id);
@@ -8,17 +9,22 @@ function homeCtrl($scope, youtubeServices, $rootScope, backgroundServices, dataS
     $rootScope.dbLog = "Database log";
     // $rootScope.multiSelect= true;
     
-    $rootScope.alerts_global = [{ type: 'info', msg: 'Welcome to Videobar on YouTube' }];
+    $rootScope.alerts_global = [{ type: 'info', msg: locale.getMessage("welcome") + " " + locale.getMessage("videobar") }];
     $rootScope.userInfo = "";
     $rootScope.completedData = {finished:[], unfinished:[]};
     $scope.$watch("multi_select",function() {
         $rootScope.multiSelect = $scope.multi_select;
     });
-    $scope.filters = [{name:'Saved', mode:'save'},
-                    {name:'Published', mode:'publish'},
-                    {name:'Deleted', mode:'delete'},
-                    {name:'No template',mode:'none'},
-                    {name:'All',mode:''}];
+
+    $scope.filters = [{name:locale.getMessage("saved"), mode:'save'},
+                    {name:locale.getMessage("published"), mode:'publish'},
+                    {name:locale.getMessage("deleted"), mode:'delete'},
+                    {name:locale.getMessage("no_template"),mode:'none'},
+                    {name:locale.getMessage("all"),mode:''}];
+
+    $scope.trans = function(key) {
+        return locale.getMessage(key);
+    }
 
     $scope.applyFilter = function(filter) {
         $scope.filter = filter;
@@ -70,7 +76,7 @@ function homeCtrl($scope, youtubeServices, $rootScope, backgroundServices, dataS
                 $rootScope.userInfo.channel = channel.items[0];
                 
                 $scope.load_videos();
-                $rootScope.alerts_global = [{type:'info',msg:"Done loading all videos. Scroll down to load more."}];
+                $rootScope.alerts_global = [{type:'info',msg: locale.getMessage("load_video_finish") + " " + locale.getMessage("load_video_more")}];
 
                 var queryChannelInterval = setInterval(function() { $scope.$apply($rootScope.alerts_global = []);clearInterval(queryChannelInterval)},1000);
 
@@ -99,7 +105,7 @@ function homeCtrl($scope, youtubeServices, $rootScope, backgroundServices, dataS
     
     $scope.load_videos = function() {
         if($scope.nextPageToken) 
-            $rootScope.alerts_global = [{type:'info',msg:"Loading more videos..."}];
+            $rootScope.alerts_global = [{type:'info',msg: locale.getMessage("loading_video_more")}];
 
         youtubeServices.queryPlayListItems($rootScope.userInfo.channel.contentDetails["relatedPlaylists"].uploads,
             ($scope.nextPageToken)?$scope.nextPageToken:'')
@@ -197,16 +203,15 @@ function homeCtrl($scope, youtubeServices, $rootScope, backgroundServices, dataS
             $rootScope.selected.thereIs = true;
         }
         else {
-            ($rootScope.selected.length == 1)?($scope.vidLabel = "to "+$scope.selected[0].name):($scope.vidLabel = "to "+$scope.selected.length +" Videos");
+            var toMessage = locale.getMessage("to") + " ";
+            ($rootScope.selected.length == 1)?($scope.vidLabel = toMessage+$scope.selected[0].name):($scope.vidLabel = toMessage+$scope.selected.length +" Videos");
             $rootScope.selected.thereIs = false;
         }
     }
     
     $scope.logToDb= function(mode,data) {
         if(data.status === 403) {
-            alert("Cannot get permission to edit annotations. Please login or switch account to " 
-                        + $rootScope.userInfo.displayName 
-                        + " on YouTube.")
+            alert(locale.getMessage("permission_err") + " " + locale.getMessage("switch_account", $rootScope.userInfo.displayName))
             var link = "https://www.youtube.com/";
             chrome.tabs.getSelected(null, function(tab) {
               chrome.tabs.create({ url : link, index : tab.index+1, openerTabId : tab.id },
@@ -247,7 +252,7 @@ function homeCtrl($scope, youtubeServices, $rootScope, backgroundServices, dataS
         if(mode == "deleteall")
             optTemplate=true;
 
-        $rootScope.alerts = [{type:'info',msg:'Adding records to Database...'}];
+        $rootScope.alerts = [{type:'info',msg: locale.getMessage("database_add") + "..." }];
         dataServices.insertLog2(params,optTemplate).then(function(res) {
             var alertInterval = setInterval(function() { $scope.$apply($rootScope.alerts = []);clearInterval(alertInterval)},800);
             $scope.report(mode,data);
@@ -267,7 +272,7 @@ function homeCtrl($scope, youtubeServices, $rootScope, backgroundServices, dataS
         $rootScope.completedData = {finished:[], unfinished:[]};
         if($rootScope.selected.length != 0) {
             if($rootScope.hasAnnotations) {
-                $rootScope.alerts = [{type : 'info', msg : 'Processing...'}];
+                $rootScope.alerts = [{type : 'info', msg : locale.getMessage("processing") + "..."}];
 
                 var publishMode = false;
                 if(mode === "publish") {
@@ -285,17 +290,17 @@ function homeCtrl($scope, youtubeServices, $rootScope, backgroundServices, dataS
                 }, function(reason) {
                     $rootScope.alerts = [{type:'error',msg:reason.msg}];
                 });
-            } else $rootScope.alerts_global = [{type:'error',msg:'Current video has no annotations.'}];
+            } else $rootScope.alerts_global = [{type:'error',msg: locale.getMessage("no_annotations")}];
         }
     }
 
     $scope.deleteAnnotations = function(mode) {
         $rootScope.completedData = {finished:[], unfinished:[]};
         if($rootScope.selected.length != 0) {
-            $rootScope.alerts = [{type:'info',msg:'Processing...'}];
+            $rootScope.alerts = [{type:'info',msg: locale.getMessage("processing") + "..."}];
             if(mode == "delete") {
                 var template = arguments[1];
-                if(confirm("Are you sure you want to clear?")) {
+                if(confirm(locale.getMessage("clear_confirm"))) {
                     youtubeServices.sendAnnotation(mode, template).then(function(data) {
                         $rootScope.completedData = data;
                         youtubeServices.sendAnnotation("publish", null, true).then(function(publishResult) {
@@ -309,7 +314,7 @@ function homeCtrl($scope, youtubeServices, $rootScope, backgroundServices, dataS
                     $rootScope.alerts = [];
             }
             else if(mode == "deleteall") {
-                if(confirm("Are you sure you want to clear all published annotations?")) {
+                if(confirm(locale.getMessage("clear_confirm_all"))) {
                     youtubeServices.sendAnnotation(mode).then(function(data) {
                         $rootScope.completedData = data;
                         youtubeServices.sendAnnotation("publish", null, true).then(function(publishResult) {
@@ -323,13 +328,13 @@ function homeCtrl($scope, youtubeServices, $rootScope, backgroundServices, dataS
                     $rootScope.alerts = [];
             }
         }
-        else $rootScope.alerts_global = [{type:'error',msg:'Select a video first'}];
+        else $rootScope.alerts_global = [{type:'error',msg: locale.getMessage("select_video_err")}];
     }
     
     $scope.saveAnnotations = function(mode) {
         $rootScope.completedData = {finished:[], unfinished:[]};
         if($rootScope.selected.length != 0) {
-            $rootScope.alerts = [{type:'info',msg:'Processing...'}];
+            $rootScope.alerts = [{type:'info',msg: locale.getMessage("processing") + "..."}];
             var template = arguments[1];
             if(template != undefined) {
 
@@ -352,45 +357,45 @@ function homeCtrl($scope, youtubeServices, $rootScope, backgroundServices, dataS
                     $rootScope.alerts = [{type:'error',msg:reason.msg}];
                 });
             }
-            else $rootScope.alerts_global = [{type:'error',msg:'No template selected'}];
+            else $rootScope.alerts_global = [{type:'error',msg: locale.getMessage("no_template_err")}];
         }
         else
-            $rootScope.alerts_global = [{type:'error',msg:'Select a video first'}];
+            $rootScope.alerts_global = [{type:'error',msg: locale.getMessage("select_video_err")}];
         
     }
     
     $scope.report = function(mode,data)
     {
         switch(mode) {
-            case "delete":$rootScope.alerts = [{type:'info',msg:'Clear Process Completed'}];break;
-            case "deleteall":$rootScope.alerts = [{type:'info',msg:'Clear all annotations completed'}];break;
-            case "publish":$rootScope.alerts = [{type:'info',msg:'Publish Process Completed'}];break;
-            case "save":$rootScope.alerts = [{type:'info',msg:'Save Process Completed.'}];break;
+            case "delete":$rootScope.alerts = [{type:'info',msg: locale.getMessage("clear_complete")}];break;
+            case "deleteall":$rootScope.alerts = [{type:'info',msg: locale.getMessage("clear_all_complete")}];break;
+            case "publish":$rootScope.alerts = [{type:'info',msg: locale.getMessage("publish_complete")}];break;
+            case "save":$rootScope.alerts = [{type:'info',msg: locale.getMessage("save_complete")}];break;
         }
         
         if($rootScope.multiSelect == false) {
             if(data.finished.length == 1) {
                 switch(mode) {
-                    case "delete":$rootScope.alerts = [{type:'info',msg:'Successfully Cleared'}];break;
-                    case "deleteall":$rootScope.alerts = [{type:'info',msg:'Successfully Cleared all annotations'}];break;
-                    case "publish":$rootScope.alerts = [{type:'info',msg:'Successfully Published'}];break;
-                    case "save":$rootScope.alerts = [{type:'info',msg:'Successfully Saved.'}];break;
+                    case "delete":$rootScope.alerts = [{type:'info',msg: locale.getMessage("clear_success")}];break;
+                    case "deleteall":$rootScope.alerts = [{type:'info',msg: locale.getMessage("clear_all_success")}];break;
+                    case "publish":$rootScope.alerts = [{type:'info',msg: locale.getMessage("publish_success")}];break;
+                    case "save":$rootScope.alerts = [{type:'info',msg: locale.getMessage("save_success")}];break;
                 }    
             }
         }
         if(data.finished.length == 0) {
             switch(mode) {
-                case "delete":$rootScope.alerts = [{type:'error',msg:'Failed'}];break;
-                case "deleteall":$rootScope.alerts = [{type:'info',msg:'Failed'}];break;
-                case "publish":$rootScope.alerts = [{type:'error',msg:'Failed'}];break;
-                case "save":$rootScope.alerts = [{type:'error',msg:'Failed.'}];break;
+                case "delete":$rootScope.alerts = [{type:'error',msg: locale.getMessage("failed")}];break;
+                case "deleteall":$rootScope.alerts = [{type:'info',msg: locale.getMessage("failed")}];break;
+                case "publish":$rootScope.alerts = [{type:'error',msg: locale.getMessage("failed")}];break;
+                case "save":$rootScope.alerts = [{type:'error',msg: locale.getMessage("failed")}];break;
             }       
         }
     }
     
     $scope.openAnnotEditor = function() {
         if($rootScope.alerts && $rootScope.alerts.length != 0) {
-            alert("Please wait until the operation is finished");
+            alert( locale.getMessage("please_wait") );
         }
         else
         {
@@ -404,7 +409,7 @@ function homeCtrl($scope, youtubeServices, $rootScope, backgroundServices, dataS
     }
     $scope.openYoutubeVideo = function() {
         if($rootScope.alerts && $rootScope.alerts.length != 0)
-            alert("Please wait until the operation is finished");
+            alert( locale.getMessage("please_wait") );
         else
         {
             var link = "http://www.youtube.com/watch?v=";
@@ -423,30 +428,30 @@ function homeCtrl($scope, youtubeServices, $rootScope, backgroundServices, dataS
     $scope.auth = function() {
         $scope.userInfo.email = "";
         $scope.userInfo.displayName = "";
-        $scope.auth_text = "Sign in with YouTube";
+        $scope.auth_text = locale.getMessage("sign_in");
 
         if(google.hasAccessToken()) {
-            $rootScope.alerts_global = [{type:'info',msg:'Logging out...'}];
+            $rootScope.alerts_global = [{type:'info',msg: locale.getMessage("logging_out") + '...'}];
             google.clearAccessToken(function(err, token) {
                 if(err) {
                     $scope.$apply($rootScope.alerts_global = [{type:'error', msg:err.message}]);
                 }
                 console.log(token);
-                $scope.$apply($rootScope.alerts_global = [{type:'info',msg:'Successfully logged out'}]);
+                $scope.$apply($rootScope.alerts_global = [{type:'info',msg: locale.getMessage("logout_success")}]);
                 $scope.$apply($rootScope.hasAccessToken = false);
-                $scope.auth_text = "Sign in with YouTube";
+                $scope.auth_text = locale.getMessage("sign_in");
                 return;
             });
         }
         else {
-            $rootScope.alerts_global = [{type:'info',msg:'Singing in...'}];
+            $rootScope.alerts_global = [{type:'info',msg: locale.getMessage("signing") + '...'}];
             google.authorize(function(err, token) {
                 if(err) {
                     $scope.$apply($rootScope.alerts_global = [{type:'error', msg:err.message}]);
                 }
                 else {
-                    $scope.auth_text = 'Sign out';
-                    $scope.$apply($rootScope.alerts_global = [{type:'info',msg:'Successfully signed in'}]);
+                    $scope.auth_text = locale.getMessage("sign_out");
+                    $scope.$apply($rootScope.alerts_global = [{type:'info',msg: locale.getMessage("signin_success")}]);
                     $rootScope.hasAccessToken = true;
                     $scope.initialize();
                 }
@@ -475,7 +480,7 @@ function loadSourceAnnotations(backgroundServices,$rootScope)
 {
     backgroundServices.hasAnnotation().then(function(data) {
         $rootScope.hasAnnotations = data;
-        (!data)?($rootScope.alerts_global = [{type:'error',msg:'Video has no annotations.'}]):($rootScope.alerts_global = [{type:'info',msg:'Annotations found on this video'}]);
+        (!data)?($rootScope.alerts_global = [{type:'error',msg: locale.getMessage("no_annotations")}]):($rootScope.alerts_global = [{type:'info',msg: locale.getMessage("annot_found")}]);
         
     },function(reason) {
         // $rootScope.alerts.push({type:'error',msg:reason.msg});
