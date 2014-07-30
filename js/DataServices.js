@@ -275,8 +275,7 @@ myExt.factory("dataServices",function($http,$q,$rootScope)
                 var url = liveURL+"templates.php";
 
             $http({method:'GET',
-            // url:url + "?locale=" + chrome.i18n.getUILanguage(),
-            url:url,
+            url:url + "?locale=" + chrome.i18n.getUILanguage(),
             headers:{'Content-Type':'application/data'}
                 }).success(function(data,status,headers,config)
                 {
