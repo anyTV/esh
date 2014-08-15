@@ -106,11 +106,15 @@ function homeCtrl($scope, youtubeServices, $rootScope, backgroundServices, dataS
     $scope.load_videos = function() {
         if($scope.nextPageToken) 
             $rootScope.alerts_global = [{type:'info',msg: locale.getMessage("loading_video_more")}];
-
+        
+        if($scope.videos.length == $scope.totalVideoCount) {
+            return $rootScope.alerts_global = [{type:'info',msg: locale.getMessage("load_video_finish")}];
+        }
         youtubeServices.queryPlayListItems($rootScope.userInfo.channel.contentDetails["relatedPlaylists"].uploads,
             ($scope.nextPageToken)?$scope.nextPageToken:'')
         .then(function(videos, status) {
             $scope.nextPageToken = videos.nextPageToken;
+            $scope.totalVideoCount = videos.pageInfo.totalResults;
             angular.forEach(videos.items,function(item) {
                 $scope.videos.push(item);
             });
