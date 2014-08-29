@@ -687,7 +687,8 @@ myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServi
                         var annotationTime = getTime(regionNodes[0].attributes.t.value, regionNodes[1].attributes.t.value);
                         if(tolerate(3, sourceDuration, annotationTime.stop_time) && tolerate(3, 0, annotationTime.start_time)) {
                             //full duration annotations
-                            durationChange2(node, { "stat_time" : 0, "stop_time" : destinationDuration });
+                            durationChange2(node, { "start_time" : 0, "stop_time" : destinationDuration });
+                            // console.log("full duration",node);
                         }
                         else if(tolerate(3, sourceDuration, annotationTime.stop_time)) {
                             //end point 
@@ -697,6 +698,7 @@ myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServi
                                 new_start = new_start - (new_start * (half_percentage/100));
                             }
                             durationChange2(node, { "start_time" : new_start, "stop_time" : destinationDuration })
+                            // console.log("end ", node);
                         }
                         else if(tolerate(3, 0, annotationTime.start_time)) {
                             //start time
@@ -706,7 +708,7 @@ myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServi
                                 new_stop = new_stop + (new_stop * (half_percentage/100));
                             }
                             durationChange2(node, { "start_time" : 0, "stop_time" : new_stop });
-
+                            // console.log("start ", node);
                         }
                         else { //mid annotations
                             var start = annotationTime.start_time
@@ -731,6 +733,7 @@ myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServi
                                 }
                             }
                             durationChange2(node, { "start_time" : start, "stop_time" : stop });
+                            // console.log("mid ", node);
                         }
                     }
                 }
