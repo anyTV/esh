@@ -643,7 +643,7 @@ myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServi
                 angular.forEach(xml.getElementsByTagName("deletedItems")[0].childNodes, function(node) {
                     if(node.nodeName === "deletedItem") {
                         if(!node.attributes.author) {
-                            node.setAttribute("author","");
+                            node.setAttribute("author", "");
                         }
                     }
                 });
@@ -656,7 +656,7 @@ myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServi
                 angular.forEach(xml.getElementsByTagName("updatedItems")[0].childNodes, function(node) {
                     if(node.nodeName === "annotation") {
                         if(!node.attributes.author) {
-                            node.setAttribute("author","");
+                            node.setAttribute("author", "");
                         }
                     }
                 });
@@ -675,11 +675,70 @@ myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServi
             
             return xml;
         },
+        fixTime : function(annotations, sourceDuration, destinationDuration) {
+            var percentageDiff = this.getPercentageDifference(sourceDuration, destinationDuration)
+                , half_percentage = percentageDiff/2;
+
+            angular.forEach(annotations.getElementsByTagName("updatedItems")[0].childNodes, function(node) {
+                if(node.nodeName == "annotation") {
+                    if(node.attributes.type.value == 'highlight' || (node.attributes.type.value == 'text' && node.attributes.style.value != 'highlightText')) {
+                        var start="", stop="";
+                        regionNodes = gotoRegionNode(node);
+                        var annotationTime = getTime(regionNodes[0].attributes.t.value, regionNodes[1].attributes.t.value);
+                        if(tolerate(3, sourceDuration, annotationTime.stop_time) && tolerate(3, 0, annotationTime.start_time)) {
+                            //full duration annotations
+                            durationChange2(node, { "stat_time" : 0, "stop_time" : destinationDuration });
+                        }
+                        else if(tolerate(3, sourceDuration, annotationTime.stop_time)) {
+                            //end point 
+                            var new_start = destinationDuration - annotationTime.duration_time;
+                            if(new_start < 0) {
+                                new_start = annotationTime.start_time;
+                                new_start = new_start - (new_start * (half_percentage/100));
+                            }
+                            durationChange2(node, { "start_time" : new_start, "stop_time" : destinationDuration })
+                        }
+                        else if(tolerate(3, 0, annotationTime.start_time)) {
+                            //start time
+                            var new_stop = anotationTime.duration_time;
+                            if(annotationTime.duration_time > destinationDuration) {
+                                new_stop = annotationTime.stop_time;
+                                new_stop = new_stop + (new_stop * (half_percentage/100));
+                            }
+                            durationChange2(node, { "start_time" : 0, "stop_time" : new_stop });
+
+                        }
+                        else { //mid annotations
+                            var start = annotationTime.start_time
+                                , stop = annotationTime.stop_time;
+                            if(annotationTime.start_time >= (sourceDuration/2)) {
+                                var stop = sourceDuration - annotationTime.stop_time;
+                                stop = destinationDuration - stop;
+                                var start = stop - annotationTime.duration_time;
+                            }
+                            else {
+
+                                start = start - (start * (half_percentage/100));
+                                stop = stop + (stop * (half_percentage/100));
+                                if(start < 0) {
+                                    start = 0;
+                                    stop = stop + (stop * (percentageDiff/100));
+                                }
+
+                                if(stop > destinationDuration) {
+                                    stop = destinationDuration;
+                                    start = start - (start * (percentageDiff/100));
+                                }
+                            }
+                            durationChange2(node, { "start_time" : start, "stop_time" : stop });
+                        }
+                    }
+                }
+            });
+        },
         getPercentageDifference: function(src, dest) {
-            logConsole("srcduration",src);
-            logConsole("destVideoDuration",dest);
             var percentage = ((dest - src) / src) * 100;
-            logConsole("percentage", percentage);
+            logConsole("percentage difference", percentage);
             return percentage;
         },
         fixTimeByPercentage:function(xml, percentage, duration) {
@@ -692,7 +751,6 @@ myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServi
                     {
                         regionNodes = gotoRegionNode(node);
                         var annotationTime=getTime(regionNodes[0].attributes.t.value, regionNodes[1].attributes.t.value);
-                        logConsole("time", annotationTime);
                         var half_percentage = percentage/2
                             , start = annotationTime.start_time
                             , stop = annotationTime.stop_time;

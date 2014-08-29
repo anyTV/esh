@@ -206,7 +206,6 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
                                         var annotation_url = getSourceVideoInfo().url;
                                     backgroundServices.getAnnotation(annotation_url).then(function(xmlString,status)
                                     {
-                                        logConsole("xmlstring unedited",xmlString);
                                         getChannelUsername($rootScope.userInfo.channel.id).then(function(channels,status)
                                         {
                                             // console.log(channels.entry.yt$username.$t);
@@ -220,20 +219,22 @@ myExt.factory("youtubeServices",function($http,$q,backgroundServices,$rootScope,
                                             var xmlList = [], i=0;
                                             videos.forEach(function(video) {
                                                 logConsole("Copy annotations from",getSourceVideoInfo());
-                                                if(getSourceVideoInfo())
-                                                {
+                                                if(getSourceVideoInfo()) {
                                                     var videoIdREgex ="http:\/\/www\.youtube\.com/watch\\?v="+getSourceVideoInfo().id;
                                                     xmlString = xmlString.replace(new RegExp(videoIdREgex,"g"),'http://www.youtube.com/watch?v='+video.id);
                                                 }
                                                 xmlList[i] = annotationsServices.updateXML(xmlString,{"video":video.id,"token":getToken()},getMode());
-                                                
+                                                logConsole(getMode() + " XML", xmlList[i]);
+
                                                 if(getMode() == "save") {
-                                                    annotationsServices.fixTimeByPercentage(xmlList[i], 
-                                                        annotationsServices.getPercentageDifference(hmsToSeconds(getSourceVideoInfo().contentDetails.duration), hmsToSeconds(video.duration)), 
-                                                        {"source":hmsToSeconds(getSourceVideoInfo().contentDetails.duration),"destination":hmsToSeconds(video.duration)});
+                                                    annotationsServices.fixTime(xmlList[i], hmsToSeconds(getSourceVideoInfo().contentDetails.duration), hmsToSeconds(video.duration));
+
+                                                    // annotationsServices.fixTimeByPercentage(xmlList[i], 
+                                                    //     annotationsServices.getPercentageDifference(hmsToSeconds(getSourceVideoInfo().contentDetails.duration), hmsToSeconds(video.duration)), 
+                                                    //     {"source":hmsToSeconds(getSourceVideoInfo().contentDetails.duration),"destination":hmsToSeconds(video.duration)});
                                                 }
-                                                logConsole("after edit", new XMLSerializer().serializeToString(xmlList[i]));
-                                                logConsole("Save XML",xmlList[i]);
+                                                // logConsole("after edit", new XMLSerializer().serializeToString(xmlList[i]));
+                                                // logConsole("Save XML",xmlList[i]);
                                                 // video.xml = new XMLSerializer().serializeToString(xmlList[i]);
                                                 backgroundServices.sendXML(xmlList[i],getMode(),video).then(function(result) {
                                                     logConsole("Save result",result);
