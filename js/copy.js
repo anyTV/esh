@@ -439,8 +439,8 @@ function homeCtrl($scope, youtubeServices, $rootScope, backgroundServices, dataS
             google.clearAccessToken(function(err, token) {
                 if(err) {
                     $scope.$apply($rootScope.alerts_global = [{type:'error', msg:err.message}]);
+                    return;
                 }
-                console.log(token);
                 $scope.$apply($rootScope.alerts_global = [{type:'info',msg: locale.getMessage("logout_success")}]);
                 $scope.$apply($rootScope.hasAccessToken = false);
                 $scope.auth_text = locale.getMessage("sign_in");
@@ -454,6 +454,7 @@ function homeCtrl($scope, youtubeServices, $rootScope, backgroundServices, dataS
                     $scope.$apply($rootScope.alerts_global = [{type:'error', msg:err.message}]);
                 }
                 else {
+                    $scope.videos = [];
                     $scope.auth_text = locale.getMessage("sign_out");
                     $scope.$apply($rootScope.alerts_global = [{type:'info',msg: locale.getMessage("signin_success")}]);
                     $rootScope.hasAccessToken = true;

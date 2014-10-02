@@ -15,17 +15,33 @@ GoogleResource.prototype.getAccessToken = function() {
     return this.token;
 }
 GoogleResource.prototype.clearAccessToken = function(callback) {
-    var that = this;
+    var that = this
+        , req = new XMLHttpRequest();
+
     this.provider.getAuthToken(this.config, function(token) {
-        that.provider.removeCachedAuthToken({"token" : token}, function() {
-            if(chrome.runtime.lastError) {
-                callback(chrome.runtime.lastError);
+        req.open('GET', "https://accounts.google.com/o/oauth2/revoke?token=" + token);
+        req.onload = function() {
+            if (req.status === 200 ) {
+                that.provider.removeCachedAuthToken({"token" : token}, function() {
+                    if(chrome.runtime.lastError) {
+                        callback(chrome.runtime.lastError);
+                        return;
+                    }
+                    that.token = null;
+                    callback(null);
+                    return;
+                });
+            }
+            else {
+                callback({"message" : req.statusText});
                 return;
             }
-            that.token = null;
-            callback(null);
+        };
+        req.onerror = function() {
+            callback({"message" : "Error Occured"});
             return;
-        });
+        }
+        req.send();
     });
 }
 

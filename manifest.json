@@ -29,6 +29,7 @@
     "identity",
   	"tabs",
   	"storage",
+    "https://accounts.google.com/o/oauth2/revoke",
   	"http://www.youtube.com/*",
   	"https://www.youtube.com/*",
   	"https://gdata.youtube.com/*",
