@@ -702,7 +702,7 @@ myExt.factory("annotationsServices",function($http,$q,$rootScope,backgroundServi
                         }
                         else if(tolerate(3, 0, annotationTime.start_time)) {
                             //start time
-                            var new_stop = anotationTime.duration_time;
+                            var new_stop = annotationTime.duration_time;
                             if(annotationTime.duration_time > destinationDuration) {
                                 new_stop = annotationTime.stop_time;
                                 new_stop = new_stop + (new_stop * (half_percentage/100));
